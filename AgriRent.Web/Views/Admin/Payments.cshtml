@@ -1,0 +1,222 @@
+@model List<AgriRent.ViewModels.AdminPaymentViewModel>
+
+@{
+    ViewData["Title"] = "Payment History";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    .payments-header {
+        background: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%);
+        border-radius: 1rem;
+        padding: 2rem;
+        color: #1a4a38;
+        margin-bottom: 2rem;
+        box-shadow: 0 10px 30px rgba(67, 233, 123, 0.2);
+    }
+    
+    .table-card {
+        background: #ffffff;
+        border-radius: 1.5rem;
+        border: none;
+        box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .custom-table {
+        margin-bottom: 0;
+    }
+    
+    .custom-table thead th {
+        background: #f8fafc;
+        color: #475569;
+        font-weight: 600;
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        letter-spacing: 1px;
+        padding: 1rem 1.5rem;
+        border-bottom: 2px solid #e2e8f0;
+    }
+    
+    .custom-table tbody tr {
+        transition: all 0.2s ease;
+    }
+    
+    .custom-table tbody tr:hover {
+        background-color: #f1f5f9;
+    }
+    
+    .custom-table tbody td {
+        padding: 1rem 1.5rem;
+        vertical-align: middle;
+        color: #334155;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    
+    .user-info {
+        display: flex;
+        flex-direction: column;
+    }
+    
+    .user-name {
+        font-weight: 600;
+        color: #1e293b;
+    }
+    
+    .user-phone {
+        font-size: 0.8rem;
+        color: #64748b;
+    }
+    
+    .payment-amount {
+        font-weight: 700;
+        color: #0f172a;
+        font-size: 1.1rem;
+    }
+    
+    .badge-status {
+        padding: 6px 12px;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    
+    .status-successful { background: #dcfce7; color: #166534; }
+    .status-pending { background: #fef08a; color: #854d0e; }
+    .status-failed { background: #fee2e2; color: #991b1b; }
+    
+    .plan-badge {
+        background: #e0e7ff;
+        color: #3730a3;
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 0.8rem;
+        font-weight: 600;
+        display: inline-block;
+    }
+    
+    .txn-id {
+        font-family: monospace;
+        font-size: 0.85rem;
+        color: #64748b;
+        background: #f8fafc;
+        padding: 3px 8px;
+        border-radius: 4px;
+        border: 1px solid #e2e8f0;
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <!-- Header Area -->
+    <div class="payments-header d-flex justify-content-between align-items-center flex-wrap gap-3">
+        <div>
+            <h2 class="mb-1 fw-bold text-dark"><i class="fas fa-wallet me-2 opacity-75"></i> Payment History</h2>
+            <p class="mb-0 text-dark opacity-75 fw-medium">Track all subscription transactions and revenue comprehensively.</p>
+        </div>
+        <div class="bg-white bg-opacity-50 px-4 py-3 rounded-4 shadow-sm border border-white border-opacity-50 d-flex align-items-center gap-3">
+            <div class="fs-1 text-success opacity-75"><i class="fas fa-chart-line"></i></div>
+            <div>
+                <p class="mb-0 text-dark opacity-75 fs-sm fw-bold text-uppercase">Total Revenue</p>
+                <h3 class="mb-0 fw-bold text-dark">₹@((ViewBag.TotalRevenue as decimal?)?.ToString("N2") ?? "0.00")</h3>
+            </div>
+        </div>
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm rounded-4" role="alert">
+            <i class="fas fa-exclamation-circle me-2"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="table-card">
+        <div class="p-4 border-bottom border-light bg-white d-flex justify-content-between align-items-center flex-wrap gap-3">
+            <h5 class="fw-bold mb-0 text-dark">Recent Transactions</h5>
+            <div class="d-flex gap-2">
+                <button class="btn btn-light rounded-pill px-4 text-muted border fw-medium"><i class="fas fa-filter me-2"></i> Filter</button>
+                <button class="btn btn-outline-success rounded-pill px-4 fw-medium"><i class="fas fa-download me-2"></i> Export CSV</button>
+            </div>
+        </div>
+        
+        <div class="table-responsive">
+            <table class="table custom-table">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>User</th>
+                        <th>Plan Details</th>
+                        <th>Transaction ID</th>
+                        <th>Amount</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null && Model.Any())
+                    {
+                        foreach (var payment in Model)
+                        {
+                            <tr>
+                                <td>
+                                    <div class="fw-semibold text-dark">@payment.PaymentDate.ToString("MMM dd, yyyy")</div>
+                                    <div class="text-muted small">@payment.PaymentDate.ToString("hh:mm tt")</div>
+                                </td>
+                                <td>
+                                    <div class="user-info">
+                                        <span class="user-name">@payment.UserName</span>
+                                        <span class="user-phone"><i class="fas fa-phone-alt ms-1 text-muted" style="font-size:0.7rem"></i> @payment.UserMobile</span>
+                                    </div>
+                                </td>
+                                <td>
+                                    <span class="plan-badge">@payment.PlanName</span>
+                                    @if(!string.IsNullOrEmpty(payment.PaymentMethod))
+                                    {
+                                        <div class="mt-1 small text-muted"><i class="fas fa-credit-card me-1"></i> @payment.PaymentMethod</div>
+                                    }
+                                </td>
+                                <td>
+                                    <span class="txn-id">@(string.IsNullOrEmpty(payment.RazorpayPaymentId) ? "N/A" : payment.RazorpayPaymentId)</span>
+                                </td>
+                                <td>
+                                    <span class="payment-amount">₹@payment.Amount</span>
+                                </td>
+                                <td>
+                                    @{
+                                        string statusClass = "status-pending";
+                                        if (payment.Status == "Successful") statusClass = "status-successful";
+                                        if (payment.Status == "Failed") statusClass = "status-failed";
+                                    }
+                                    <span class="badge-status @statusClass">
+                                        @if(payment.Status == "Successful") { <i class="fas fa-check-circle me-1"></i> }
+                                        else if(payment.Status == "Failed") { <i class="fas fa-times-circle me-1"></i> }
+                                        else { <i class="fas fa-clock me-1"></i> }
+                                        @payment.Status
+                                    </span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="6" class="text-center py-5">
+                                <div class="text-muted">
+                                    <i class="fas fa-receipt mb-3 opacity-25" style="font-size: 3rem;"></i>
+                                    <h5 class="fw-bold">No Payments Found</h5>
+                                    <p>There are currently no transactions recorded in the system.</p>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="p-3 bg-light border-top text-center text-muted small">
+            Showing all @(Model?.Count ?? 0) transactions
+        </div>
+    </div>
+</div>

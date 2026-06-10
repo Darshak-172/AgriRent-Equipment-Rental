@@ -1,0 +1,57 @@
+<resources>
+    <string name="app_name">એગ્રીરેન્ટ</string>
+    <string name="app_tagline">ખેતીના સાધનો ભાડે લો • ખેતીની સામગ્રી ખરીદો</string>
+
+    <string name="select_language">ભાષા પસંદ કરો</string>
+    <string name="choose_language_subtitle">તમારી પસંદગીની ભાષા પસંદ કરો</string>
+    <string name="english">English</string>
+    <string name="hindi">हिंदी</string>
+    <string name="gujarati">ગુજરાતી</string>
+
+    <string name="login_title">લૉગિન</string>
+    <string name="mobile_number">મોબાઇલ નંબર</string>
+    <string name="password">પાસવર્ડ</string>
+    <string name="login">લૉગિન કરો</string>
+    <string name="login_via_otp">OTP દ્વારા લૉગિન કરો</string>
+    <string name="login_via_password">પાસવર્ડ દ્વારા લૉગિન કરો</string>
+    <string name="verify_login">ચકાસો અને લૉગિન કરો</string>
+    <string name="new_user">નવા વપરાશકર્તા?</string>
+    <string name="forgot_password">પાસવર્ડ ભૂલી ગયા છો?</string>
+
+    <string name="register_title">ખાતું બનાવો</string>
+    <string name="register">રજિસ્ટર કરો</string>
+    <string name="full_name">પૂરું નામ</string>
+    <string name="confirm_password">પાસવર્ડની પુષ્ટિ કરો</string>
+    <string name="terms_condition">હું નિયમો અને શરતો સાથે સંમત છું</string>
+    <string name="already_have_account">પહેલેથી જ ખાતું છે? લૉગિન કરો</string>
+    <string name="already_registered_error">વપરાશકર્તા પહેલાથી જ નોંધાયેલ છે! કૃપા કરીને લૉગિન કરો.</string>
+    <string name="reg_success">નોંધણી સફળ! કૃપા કરીને લૉગિન કરો.</string>
+    <string name="terms_error">કૃપા કરીને નિયમો અને શરતો સાથે સંમત થાઓ</string>
+    <string name="password_mismatch">પાસવર્ડ મેચ થતા નથી</string>
+
+    <string name="dashboard_title">ડેશબોર્ડ</string>
+    <string name="welcome">સ્વાગત છે</string>
+    <string name="logout">લૉગ આઉટ</string>
+
+    <string name="old_password">જૂનો પાસવર્ડ</string>
+    <string name="new_password">નવો પાસવર્ડ</string>
+    <string name="send_otp">OTP મોકલો</string>
+    <string name="enter_otp">OTP દાખલ કરો</string>
+    <string name="resend_otp">OTP ફરી મોકલો</string>
+    <string name="resend">ફરી મોકલો</string>
+    <string name="otp_sent">OTP સફળતાપૂર્વક મોકલ્યો</string>
+    <string name="invalid_otp">કૃપા કરીને માન્ય OTP દાખલ કરો</string>
+
+    <string name="mobile_error">કૃપા કરીને 10 અંકનો માન્ય મોબાઇલ નંબર દાખલ કરો</string>
+    <string name="password_length_error">પાસવર્ડ 6 થી 19 અક્ષરોનો હોવો જોઈએ</string>
+    <string name="registration_failed">નોંધણી નિષ્ફળ</string>
+    <string name="network_error">નેટવર્ક સમસ્યા. કૃપા કરીને ફરી પ્રયાસ કરો</string>
+
+    <string name="reset_password">પાસવર્ડ રીસેટ કરો</string>
+    <string name="change_password">પાસવર્ડ બદલો</string>
+    <string name="password_changed">પાસવર્ડ સફળતાપૂર્વક બદલ્યો</string>
+
+    <string name="loading">લોડ થઈ રહ્યું છે</string>
+    <string name="please_wait">કૃપા કરીને રાહ જોઈ રહ્યા છીએ...</string>
+    <string name="whatsapp_booking_message">નમસ્તે, હું %1$s ના બુકિંગ વિશે આપનો સંપર્ક કરી રહ્યો છું.</string>
+</resources>

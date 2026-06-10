@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="5dp"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="2dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeWidth="0dp"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- Image area with overlays -->
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="150dp"
+            android:background="#F0F2F0">
+
+            <ImageView
+                android:id="@+id/ivEquipmentImageGrid"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:contentDescription="Equipment image"/>
+
+
+
+            <!-- Category badge top-left -->
+            <TextView
+                android:id="@+id/tvEquipmentCategoryGrid"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="top|start"
+                android:layout_margin="9dp"
+                android:paddingStart="9dp"
+                android:paddingEnd="9dp"
+                android:paddingTop="3dp"
+                android:paddingBottom="3dp"
+                android:text="Tractor"
+                android:textSize="9sp"
+                android:textColor="#FFFFFF"
+                android:textStyle="bold"
+                android:letterSpacing="0.05"
+                android:background="@drawable/category_badge_bg"/>
+
+        </FrameLayout>
+
+        <!-- Card body -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="11dp"
+            android:paddingEnd="11dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="12dp">
+
+            <!-- Equipment name -->
+            <TextView
+                android:id="@+id/tvEquipmentNameGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Equipment Name"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#1A2E1A"
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:lineSpacingExtra="1dp"/>
+
+            <!-- Location -->
+            <TextView
+                android:id="@+id/tvEquipmentLocationGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📍 Location"
+                android:textSize="11sp"
+                android:textColor="#999999"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginTop="3dp"
+                android:layout_marginBottom="8dp"/>
+
+            <!-- Price divider line -->
+            <View
+                android:layout_width="30dp"
+                android:layout_height="2dp"
+                android:background="#E8F5E9"
+                android:layout_marginBottom="7dp"/>
+
+            <!-- Hourly price -->
+            <TextView
+                android:id="@+id/tvHourlyPriceGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="₹600/hr"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#2E7D32"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <!-- Daily price -->
+            <TextView
+                android:id="@+id/tvDailyPriceGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="₹7000/day"
+                android:textSize="11sp"
+                android:textColor="#AAAAAA"
+                android:maxLines="1"
+                android:ellipsize="end"
+                android:layout_marginTop="1dp"/>
+
+        </LinearLayout>
+    </LinearLayout>
+
+</com.google.android.material.card.MaterialCardView>

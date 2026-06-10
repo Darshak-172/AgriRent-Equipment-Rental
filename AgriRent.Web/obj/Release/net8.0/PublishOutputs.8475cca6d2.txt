@@ -1,0 +1,11 @@
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\AgriRent.Web.exe
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\appsettings.json
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\AgriRent.Web.dll
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\AgriRent.Web.deps.json
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\AgriRent.Web.runtimeconfig.json
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\AgriRent.Web.pdb
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\Microsoft.IdentityModel.Abstractions.dll
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\Microsoft.IdentityModel.JsonWebTokens.dll
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\Microsoft.IdentityModel.Logging.dll
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\Microsoft.IdentityModel.Tokens.dll
+c:\Users\jaini\Desktop\temp-AgriRent\Web_Release_Build\System.IdentityModel.Tokens.Jwt.dll

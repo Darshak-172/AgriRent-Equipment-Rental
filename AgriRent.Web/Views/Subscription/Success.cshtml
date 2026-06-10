@@ -1,0 +1,216 @@
+@{
+    ViewData["Title"] = "Subscription Activated!";
+}
+
+@section Styles {
+<style>
+    .success-page {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 50%, #f0fdf4 100%);
+        padding: 60px 20px;
+    }
+    .success-card {
+        background: #fff;
+        border-radius: 28px;
+        padding: 56px 48px;
+        max-width: 520px;
+        width: 100%;
+        text-align: center;
+        box-shadow: 0 20px 60px rgba(34,168,85,0.15);
+        position: relative;
+        overflow: hidden;
+    }
+    .success-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 5px;
+        background: linear-gradient(90deg, #22a855, #16a34a, #a8f0c6);
+    }
+    .success-icon-wrap {
+        position: relative;
+        display: inline-block;
+        margin-bottom: 28px;
+    }
+    .success-icon {
+        width: 100px; height: 100px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #22a855, #16a34a);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 44px;
+        color: #fff;
+        box-shadow: 0 12px 35px rgba(34,168,85,0.4);
+        animation: successPop 0.6s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    @@keyframes successPop {
+        from { transform: scale(0); opacity: 0; }
+        to   { transform: scale(1); opacity: 1; }
+    }
+    .success-rings {
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        border: 2px solid rgba(34,168,85,0.25);
+        animation: ringPulse 2s ease-out infinite;
+    }
+    .success-rings::after {
+        content: '';
+        position: absolute;
+        inset: -12px;
+        border-radius: 50%;
+        border: 2px solid rgba(34,168,85,0.12);
+        animation: ringPulse 2s ease-out 0.5s infinite;
+    }
+    @@keyframes ringPulse {
+        0%   { transform: scale(1); opacity: 1; }
+        100% { transform: scale(1.4); opacity: 0; }
+    }
+    .success-card h1 {
+        font-size: 2rem;
+        font-weight: 800;
+        color: #111827;
+        margin-bottom: 12px;
+    }
+    .success-card p {
+        color: #6b7280;
+        font-size: 15px;
+        line-height: 1.7;
+        margin-bottom: 32px;
+    }
+    .success-perks {
+        background: #f8faf9;
+        border-radius: 16px;
+        padding: 20px 24px;
+        margin-bottom: 32px;
+        text-align: left;
+    }
+    .success-perks h6 {
+        font-weight: 700;
+        font-size: 13px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        color: #9ca3af;
+        margin-bottom: 14px;
+    }
+    .perk-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 7px 0;
+        font-size: 14px;
+        color: #374151;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .perk-item:last-child { border-bottom: none; }
+    .perk-item .perk-icon {
+        width: 28px; height: 28px;
+        border-radius: 8px;
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        color: #16a34a;
+        flex-shrink: 0;
+    }
+    .success-actions { display: flex; flex-direction: column; gap: 12px; }
+    .btn-go-home {
+        display: block;
+        padding: 15px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 15px;
+        text-decoration: none;
+        background: linear-gradient(135deg, #22a855, #16a34a);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(34,168,85,0.35);
+        transition: all 0.25s ease;
+    }
+    .btn-go-home:hover {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        box-shadow: 0 8px 25px rgba(34,168,85,0.45);
+        transform: translateY(-2px);
+        color: #fff;
+    }
+    .btn-view-plans {
+        display: block;
+        padding: 13px;
+        border-radius: 14px;
+        font-weight: 600;
+        font-size: 14px;
+        text-decoration: none;
+        background: #f3f4f6;
+        color: #374151;
+        transition: all 0.2s ease;
+    }
+    .btn-view-plans:hover {
+        background: #e5e7eb;
+        color: #111827;
+    }
+    .confetti-emoji {
+        font-size: 1.4rem;
+        animation: bounce 1s ease infinite alternate;
+    }
+    @@keyframes bounce {
+        from { transform: translateY(0); }
+        to   { transform: translateY(-6px); }
+    }
+</style>
+}
+
+<div class="success-page">
+    <div class="success-card">
+
+        <!-- Icon -->
+        <div class="success-icon-wrap">
+            <div class="success-rings"></div>
+            <div class="success-icon">
+                <i class="fas fa-check"></i>
+            </div>
+        </div>
+
+        <!-- Heading -->
+        <h1>You're Premium Now! <span class="confetti-emoji">🎉</span></h1>
+        <p>
+            Your subscription is active and your account has been upgraded.<br>
+            Start listing equipment and products right away!
+        </p>
+
+        <!-- Perks -->
+        <div class="success-perks">
+            <h6>What's Unlocked</h6>
+            <div class="perk-item">
+                <span class="perk-icon"><i class="fas fa-tractor"></i></span>
+                <span>Equipment listing access activated</span>
+            </div>
+            <div class="perk-item">
+                <span class="perk-icon"><i class="fas fa-store"></i></span>
+                <span>Product marketplace access activated</span>
+            </div>
+            <div class="perk-item">
+                <span class="perk-icon"><i class="fas fa-certificate"></i></span>
+                <span>Verified seller badge applied to profile</span>
+            </div>
+            <div class="perk-item">
+                <span class="perk-icon"><i class="fas fa-headset"></i></span>
+                <span>Priority support enabled</span>
+            </div>
+        </div>
+
+        <!-- Actions -->
+        <div class="success-actions">
+            <a href="/" class="btn-go-home">
+                <i class="fas fa-home me-2"></i> Go to Dashboard
+            </a>
+            <a href="/Subscription" class="btn-view-plans">
+                <i class="fas fa-list me-2"></i> View My Plan
+            </a>
+        </div>
+
+    </div>
+</div>

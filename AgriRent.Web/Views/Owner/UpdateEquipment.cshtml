@@ -1,0 +1,248 @@
+@{
+    Layout = "_OwnerLayout";
+    ViewData["Title"] = "Update Equipment – AgriRent";
+    dynamic eq = ViewBag.Equipment;
+    int equipId = ViewBag.EquipmentId ?? 0;
+
+    // Pull existing values
+    string existingName      = eq.GetProperty("equipmentName").GetString() ?? "";
+    string existingDesc      = eq.GetProperty("description").GetString() ?? "";
+    string existingHourlyPrice = eq.GetProperty("hourlyPrice").ToString() ?? "0";
+    string existingDailyPrice  = eq.GetProperty("dailyPrice").ToString() ?? "0";
+    string existingLocation  = eq.GetProperty("location").GetString() ?? "";
+    int existingSubCatId     = 0;
+    try { existingSubCatId = ((System.Text.Json.JsonElement)eq).GetProperty("subCategoryId").GetInt32(); } catch { }
+}
+
+@section Styles {
+    <style>
+        .ae-wrap { max-width: 860px; margin: 0 auto; padding-bottom: 60px; }
+        
+        .ae-card { background: #fff; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,.04); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+
+        .ae-card-header {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            padding: 36px 40px; color: #fff; position: relative; overflow: hidden;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .header-text { position: z-index: 1; }
+        .ae-card-header h2 { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; margin: 0 0 6px; }
+        .ae-card-header p  { font-size: 14.5px; opacity: .8; margin: 0; color: #cbd5e1; }
+        .ae-bg-shape { position: absolute; width: 150px; height: 150px; background: #3b82f6; filter: blur(40px); opacity: 0.3; border-radius: 50%; right: -20px; top: -50px; }
+        
+        .eq-id-chip {
+            position: relative; z-index: 1;
+            background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+            padding: 6px 14px; border-radius: 999px; font-size: 12px; font-weight: 700; color: #93c5fd; letter-spacing: 0.5px;
+        }
+
+        .ae-card-body { padding: 40px; }
+
+        .ae-section { font-size: 12px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin: 28px 0 16px; }
+        .ae-section:first-child { margin-top: 0; }
+        .ae-divider { border: none; border-top: 1px dashed #e2e8f0; margin: 32px 0; }
+
+        .ae-group { margin-bottom: 20px; }
+        .ae-label { display: block; font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+        .ae-label span { color: #ef4444; margin-left: 2px; }
+        .ae-input, .ae-select, .ae-textarea {
+            width: 100%; border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 12px 16px; font-size: 15px; font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #0f172a; background: #f8fafc; transition: all .2s;
+        }
+        .ae-input:focus, .ae-select:focus, .ae-textarea:focus {
+            outline: none; border-color: #3b82f6; background: #fff; box-shadow: 0 4px 12px rgba(59,130,246,0.15);
+        }
+        .ae-textarea { resize: vertical; min-height: 120px; }
+        .ae-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @@media (max-width: 600px) { .ae-row { grid-template-columns: 1fr; } }
+
+        /* ── Radio group ───────────────────────────────────────── */
+        .ue-radio-group { display: flex; gap: 12px; }
+        .ue-radio-opt {
+            flex: 1; display: flex; align-items: center; justify-content: center;
+            gap: 8px; padding: 12px 16px;
+            border: 2px solid #e2e8f0; border-radius: 12px;
+            cursor: pointer; font-size: 15px; font-weight: 600;
+            color: #64748b; background: #f8fafc;
+            transition: all .2s; user-select: none;
+        }
+        .ue-radio-opt input { display: none; }
+        .ue-radio-opt:has(input:checked) {
+            border-color: #3b82f6; background: #eff6ff; color: #1d4ed8;
+        }
+
+        /* ── Submit ─────────────────────────────────────────────────────── */
+        .ae-actions { display: flex; gap: 16px; margin-top: 16px; }
+        .ae-btn-cancel {
+            padding: 16px 24px; border: 2px solid #e2e8f0; border-radius: 14px; background: #fff;
+            font-size: 15px; font-weight: 700; color: #475569; cursor: pointer; text-decoration: none;
+            display: flex; align-items: center; gap: 8px; transition: all .2s;
+        }
+        .ae-btn-cancel:hover { background: #f1f5f9; border-color: #cbd5e1; color: #0f172a; }
+
+        .ae-submit {
+            flex: 1; padding: 16px;
+            background: #3b82f6;
+            color: #fff; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all .2s; box-shadow: 0 8px 20px rgba(59,130,246,0.3);
+        }
+        .ae-submit:hover   { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(59,130,246,0.4); background: #2563eb; }
+        .ae-submit:active  { transform: scale(.98); }
+        .ae-submit:disabled { opacity: .7; cursor: not-allowed; transform: none; box-shadow: none; background: #94a3b8; }
+        
+        .od-info-banner { background: #fffbeb; border: 1px dashed #fcd34d; border-radius: 16px; padding: 16px 20px; display: flex; gap: 12px; margin-bottom: 24px; color: #92400e; font-size: 14.5px; }
+    </style>
+}
+
+<div class="od-header">
+    <h1 class="page-title"><i class="fas fa-pen text-blue-500"></i> Edit Equipment</h1>
+</div>
+
+<div class="ae-wrap animate-fade-in">
+    <div class="ae-card">
+        <div class="ae-card-header">
+            <div class="ae-bg-shape"></div>
+            <div class="header-text">
+                <h2>Update Registration</h2>
+            </div>
+            <div class="eq-id-chip"><i class="fas fa-hashtag"></i> @equipId</div>
+        </div>
+
+        <div class="ae-card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="od-alert od-alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="od-alert od-alert-error"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+            }
+
+            <div class="od-info-banner">
+                <i class="fas fa-info-circle" style="font-size: 18px; color: #f59e0b; margin-top: 2px;"></i>
+                <div>
+                    <strong>Note:</strong> Modifying details will keep your current listing status active.
+                    To add or remove photos, use the <strong><i class="fas fa-camera"></i> Camera</strong> button from the dashboard.
+                </div>
+            </div>
+
+            <form method="post" action="/Owner/UpdateEquipment/@equipId" id="updateForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="id" value="@equipId" />
+
+                <div class="ae-section">1. Basic Info</div>
+                <div class="ae-group">
+                    <label class="ae-label">Equipment Name <span>*</span></label>
+                    <input class="ae-input" type="text" name="equipmentName" value="@existingName" required maxlength="200" placeholder="e.g. Mahindra 415 DI Tractor" />
+                </div>
+                <div class="ae-group">
+                    <label class="ae-label">Description <span>*</span></label>
+                    <textarea class="ae-textarea" name="description" required maxlength="2000" placeholder="Describe the equipment, its features and condition…">@existingDesc</textarea>
+                </div>
+
+                <hr class="ae-divider" />
+                <div class="ae-section">2. Categorization & Pricing</div>
+
+                @{ var cats = ViewBag.Categories as IEnumerable<object> ?? new List<object>(); }
+                @if (cats.Any())
+                {
+                    <div class="ae-row">
+                        <div class="ae-group">
+                            <label class="ae-label">Category <span>*</span></label>
+                            <select class="ae-select" id="catSelect" onchange="updateSubcats()" required>
+                                <option value="">— Select Category —</option>
+                                @foreach (dynamic cat in cats)
+                                {
+                                    <option value="@cat.id">@cat.name</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="ae-group">
+                            <label class="ae-label">Subcategory <span>*</span></label>
+                            <select class="ae-select" name="subCategoryId" id="subCatSelect" required>
+                                <option value="">— Select Category First —</option>
+                            </select>
+                        </div>
+                    </div>
+                }
+
+                <div class="ae-row">
+                    <div class="ae-group">
+                        <label class="ae-label">Hourly Price (₹) <span>*</span></label>
+                        <input class="ae-input" type="number" name="hourlyPrice" min="1" step="0.01" value="@existingHourlyPrice" required placeholder="e.g. 200" />
+                    </div>
+                    <div class="ae-group">
+                        <label class="ae-label">Daily Price (₹) <span>*</span></label>
+                        <input class="ae-input" type="number" name="dailyPrice" min="1" step="0.01" value="@existingDailyPrice" required placeholder="e.g. 1500" />
+                    </div>
+                </div>
+
+                <div class="ae-group">
+                    <label class="ae-label">Pickup Location <span>*</span></label>
+                    <input class="ae-input" type="text" name="location" value="@existingLocation" required maxlength="200" placeholder="e.g. Bardoli, Surat" />
+                </div>
+
+                <hr class="ae-divider" />
+
+                <div class="ae-actions">
+                    <a href="/Owner/Dashboard" class="ae-btn-cancel">
+                        <i class="fas fa-times"></i> Cancel
+                    </a>
+                    <button type="submit" class="ae-submit" id="saveBtn">
+                        <i class="fas fa-save"></i> <span id="saveBtnText">Save Changes</span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+// Build category → subcategory map from Razor-rendered data
+const catsData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(
+    (ViewBag.Categories as IEnumerable<object> ?? new List<object>())
+        .Cast<object>().Select(c => {
+            var jc = System.Text.Json.JsonSerializer.SerializeToElement(c);
+            return jc;
+        })
+));
+
+const existingSubCatId = @existingSubCatId;
+
+function updateSubcats() {
+    const catId = parseInt(document.getElementById('catSelect').value, 10);
+    const sub   = document.getElementById('subCatSelect');
+    sub.innerHTML = '<option value="">— Select Subcategory —</option>';
+    const cat = catsData.find(c => c.id === catId);
+    if (!cat) return;
+    (cat.subCategories || []).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id;
+        opt.textContent = s.name;
+        if (s.id === existingSubCatId) opt.selected = true;
+        sub.appendChild(opt);
+    });
+}
+
+// Pre-select existing cat/subcat on load
+(function() {
+    for (const cat of catsData) {
+        if ((cat.subCategories || []).some(s => s.id === existingSubCatId)) {
+            document.getElementById('catSelect').value = cat.id;
+            updateSubcats();
+            break;
+        }
+    }
+}());
+
+document.getElementById('updateForm').addEventListener('submit', () => {
+    const btn = document.getElementById('saveBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Saving updates…</span>';
+});
+</script>
+}

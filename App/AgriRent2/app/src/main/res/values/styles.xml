@@ -1,0 +1,225 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="TextAppearance.App" parent="TextAppearance.MaterialComponents.Body1" />
+    <style name="Widget.App" parent="" />
+
+    <!-- Base Material 3 App Theme -->
+    <style name="AppTheme" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <item name="colorPrimary">@color/agri_green</item>
+        <item name="colorPrimaryDark">@color/agri_green_dark</item>
+        <item name="colorAccent">@color/agri_dark_green</item>
+        <item name="android:statusBarColor">@color/white</item>
+        <item name="android:windowBackground">@color/bg_main</item>
+        <item name="materialButtonStyle">@style/Widget.App.MaterialButton</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- BUTTON STYLES (Modern Hierarchy) -->
+    <!-- ============================================================ -->
+
+    <!-- Primary Button (Main CTA - Filled) -->
+    <style name="Widget.App.MaterialButton" parent="Widget.MaterialComponents.Button">
+        <item name="android:textColor">@color/white</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
+        <item name="android:letterSpacing">0.015</item>
+        <item name="cornerRadius">@dimen/corner_radius_md</item>
+        <item name="elevation">@dimen/elevation_2</item>
+        <item name="android:paddingStart">@dimen/spacing_xl</item>
+        <item name="android:paddingEnd">@dimen/spacing_xl</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="materialThemeOverlay">@style/ThemeOverlay.App.Button.Primary</item>
+    </style>
+
+    <!-- Secondary Button (Outlined) -->
+    <style name="Widget.App.Button.Secondary" parent="Widget.MaterialComponents.Button.OutlinedButton">
+        <item name="android:textColor">@color/agri_green</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
+        <item name="android:letterSpacing">0.015</item>
+        <item name="cornerRadius">@dimen/corner_radius_md</item>
+        <item name="strokeColor">@color/agri_green</item>
+        <item name="strokeWidth">2dp</item>
+        <item name="android:paddingStart">@dimen/spacing_xl</item>
+        <item name="android:paddingEnd">@dimen/spacing_xl</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+    </style>
+
+    <!-- Tertiary Button (Text-only) -->
+    <style name="Widget.App.Button.Tertiary" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:textColor">@color/agri_green</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button</item>
+        <item name="android:letterSpacing">0.015</item>
+        <item name="rippleColor">@color/agri_green_light</item>
+        <item name="android:minHeight">@dimen/button_height</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+    </style>
+
+    <!-- Small Button Variant -->
+    <style name="Widget.App.Button.Small" parent="Widget.App.MaterialButton">
+        <item name="android:minHeight">@dimen/button_height_small</item>
+        <item name="android:textAppearance">@style/TextAppearance.App.Button.Small</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+    </style>
+
+    <!-- Icon Button -->
+    <style name="Widget.App.Button.Icon" parent="Widget.MaterialComponents.Button.TextButton">
+        <item name="android:minWidth">@dimen/touch_target_min</item>
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:insetLeft">0dp</item>
+        <item name="android:insetRight">0dp</item>
+        <item name="android:insetTop">0dp</item>
+        <item name="android:insetBottom">0dp</item>
+        <item name="cornerRadius">@dimen/corner_radius_full</item>
+        <item name="rippleColor">@color/agri_green_light</item>
+    </style>
+
+    <!-- Button Theme Overlay (Primary) -->
+    <style name="ThemeOverlay.App.Button.Primary" parent="ThemeOverlay.AppCompat">
+        <item name="colorPrimary">@color/agri_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- TEXT STYLES -->
+    <!-- ============================================================ -->
+
+    <!-- Button Text -->
+    <style name="TextAppearance.App.Button" parent="TextAppearance.MaterialComponents.Button">
+        <item name="android:textSize">@dimen/text_size_subtitle</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="TextAppearance.App.Button.Small" parent="TextAppearance.App.Button">
+        <item name="android:textSize">@dimen/text_size_body</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <!-- Display (Large Headings) -->
+    <style name="TextAppearance.App.Display" parent="TextAppearance.MaterialComponents.Headline4">
+        <item name="android:textSize">@dimen/text_size_display</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Headline (Section Titles) -->
+    <style name="TextAppearance.App.Headline" parent="TextAppearance.MaterialComponents.Headline5">
+        <item name="android:textSize">@dimen/text_size_headline</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Title (Card/Dialog Titles) -->
+    <style name="TextAppearance.App.Title" parent="TextAppearance.AppCompat.Title">
+        <item name="android:textSize">@dimen/text_size_title_large</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Subtitle (Secondary Titles) -->
+    <style name="TextAppearance.App.Subtitle" parent="TextAppearance.MaterialComponents.Subtitle1">
+        <item name="android:textSize">@dimen/text_size_subtitle</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textColor">@color/text_primary</item>
+    </style>
+
+    <!-- Body (Main Text) -->
+    <style name="TextAppearance.App.Body" parent="TextAppearance.MaterialComponents.Body1">
+        <item name="android:textSize">@dimen/text_size_body_medium</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:lineSpacingExtra">2sp</item>
+    </style>
+
+    <!-- Caption (Labels, Hints) -->
+    <style name="TextAppearance.App.Caption" parent="TextAppearance.MaterialComponents.Caption">
+        <item name="android:textSize">@dimen/text_size_sm</item>
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/text_secondary</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- CARD STYLES -->
+    <!-- ============================================================ -->
+
+    <style name="Widget.App.Card" parent="Widget.MaterialComponents.CardView">
+        <item name="cardBackgroundColor">@color/card_bg</item>
+        <item name="cardElevation">@dimen/elevation_1</item>
+        <item name="cardCornerRadius">@dimen/corner_radius_md</item>
+        <item name="contentPadding">@dimen/card_padding</item>
+    </style>
+
+    <!-- Elevated Card (Higher elevation for emphasis) -->
+    <style name="Widget.App.Card.Elevated" parent="Widget.App.Card">
+        <item name="cardElevation">@dimen/elevation_3</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- INPUT & FORM STYLES -->
+    <!-- ============================================================ -->
+
+    <style name="Widget.App.EditText" parent="Widget.MaterialComponents.TextInputEditText.OutlinedBox">
+        <item name="android:minHeight">@dimen/touch_target_min</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="android:textSize">@dimen/text_size_body_medium</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- STATE STYLES (Loading, Empty, Error) -->
+    <!-- ============================================================ -->
+
+    <!-- Empty State Container -->
+    <style name="Widget.App.Empty" parent="Widget.App">
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:paddingStart">@dimen/spacing_2xl</item>
+        <item name="android:paddingEnd">@dimen/spacing_2xl</item>
+        <item name="android:paddingTop">@dimen/spacing_3xl</item>
+        <item name="android:paddingBottom">@dimen/spacing_3xl</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- Error State Container -->
+    <style name="Widget.App.Error" parent="Widget.App.Empty">
+    </style>
+
+    <!-- Loading State Container -->
+    <style name="Widget.App.Loading" parent="Widget.App">
+        <item name="android:gravity">center</item>
+        <item name="android:orientation">vertical</item>
+        <item name="android:visibility">gone</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- BOTTOM NAVIGATION -->
+    <!-- ============================================================ -->
+
+    <style name="Widget.App.BottomNavigation" parent="Widget.MaterialComponents.BottomNavigationView">
+        <item name="elevation">@dimen/bottom_nav_elevation</item>
+        <item name="backgroundColor">@color/white</item>
+        <item name="itemTextAppearanceActive">@style/TextAppearance.App.Caption</item>
+        <item name="itemTextAppearanceInactive">@style/TextAppearance.App.Caption</item>
+    </style>
+
+    <!-- ============================================================ -->
+    <!-- TOOLBAR & HEADER STYLES -->
+    <!-- ============================================================ -->
+
+    <style name="Widget.App.Toolbar" parent="Widget.Design.AppBarLayout">
+        <item name="android:background">@color/white</item>
+        <item name="elevation">@dimen/elevation_1</item>
+        <item name="android:paddingStart">@dimen/spacing_lg</item>
+        <item name="android:paddingEnd">@dimen/spacing_lg</item>
+    </style>
+
+</resources>

@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  dialog_receipt.xml
+  A beautiful premium receipt dialog matching the PDF design.
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@drawable/bg_dialog_sheet"
+    android:padding="0dp">
+
+    <!-- Top Green Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:background="#1B5E20"
+        android:padding="20dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:layout_height="wrap_content"
+                android:text="AgriRent"
+                android:textColor="#FFFFFF"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+            
+            <ImageView
+                android:id="@+id/ivCloseReceipt"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@android:drawable/ic_menu_close_clear_cancel"
+                android:tint="#FFFFFF"
+                android:background="?selectableItemBackgroundBorderless"
+                android:padding="4dp" />
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Payment Receipt"
+            android:textColor="#A5D6A7"
+            android:textSize="12sp"
+            android:layout_marginTop="2dp" />
+
+    </LinearLayout>
+    
+    <!-- Accent Bar -->
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="4dp"
+        android:background="#43A047" />
+
+    <!-- Details Container -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp">
+        
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="PAYMENT SUMMARY"
+            android:textColor="#1B5E20"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="12dp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="#E8F5E9"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Receipt # -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Receipt No." android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptNo" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="rcpt_xxx" android:textColor="#1A2E1A" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        
+        <!-- Divider snippet -->
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginBottom="12dp" />
+
+        <!-- Billed To Name -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Billed To" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptUserName" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="John Doe" android:textColor="#1A2E1A" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Billed To Phone -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="16dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Contact" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptUserPhone" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="+91 9876543210" android:textColor="#555555" android:textSize="13sp" />
+        </LinearLayout>
+
+        <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#F0F0F0" android:layout_marginBottom="16dp" />
+
+        <!-- Plan -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Plan Name" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptPlan" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Premium" android:textColor="#1A2E1A" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Date -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Payment Date" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptDate" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Date" android:textColor="#1A2E1A" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Method -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Method" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptMethod" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="UPI" android:textColor="#1A2E1A" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <!-- Status -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Status" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Successful" android:textColor="#2E7D32" android:textSize="14sp" android:textStyle="bold" />
+        </LinearLayout>
+        
+        <!-- Error Message (Optional) -->
+        <TextView
+            android:id="@+id/tvRcptError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Error: X"
+            android:textColor="#D32F2F"
+            android:textSize="12sp"
+            android:layout_marginBottom="12dp"
+            android:visibility="gone" />
+
+        <!-- Order ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Order ID" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptOrderId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="order_xxx" android:textColor="#555555" android:textSize="12sp" android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <!-- Payment ID -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="24dp">
+            <TextView android:layout_width="0dp" android:layout_weight="1" android:layout_height="wrap_content" android:text="Payment ID" android:textColor="#888888" android:textSize="13sp" />
+            <TextView android:id="@+id/tvRcptPaymentId" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="pay_xxx" android:textColor="#555555" android:textSize="12sp" android:fontFamily="monospace" />
+        </LinearLayout>
+
+        <!-- Total Box -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="80dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_plan_popular"
+            android:padding="16dp"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="24dp">
+            <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Total Amount Paid" android:textColor="#E8F5E9" android:textSize="12sp" />
+            <TextView android:id="@+id/tvRcptAmount" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="₹999.00" android:textColor="#FFFFFF" android:textSize="24sp" android:textStyle="bold" />
+        </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRcptDownload"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:text="⬇ Download PDF Receipt"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="26dp"
+            app:backgroundTint="@color/agri_green" />
+
+    </LinearLayout>
+</LinearLayout>

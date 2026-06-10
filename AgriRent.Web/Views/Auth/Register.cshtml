@@ -1,0 +1,198 @@
+@using AgriRent.Web.Services
+@{
+    ViewData["Title"] = "Register";
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+
+<div class="login-page">
+    <div class="glass-card">
+        <div class="login-header">
+            <picture>
+                <source srcset="~/images/agrirent_logo.png" type="image/png">
+                <img src="~/images/agrirent_logo.png" class="logo" alt="AgriRent Logo" />
+            </picture>
+            <h2>@T("JoinAgriRent")</h2>
+            <p>@T("JoinSubtext")</p>
+        </div>
+
+        <form id="registerForm">
+            <div id="formError" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">@T("FullName")</label>
+                <div class="input-container">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="fullName" class="form-input" placeholder="e.g. John Doe" 
+                           pattern="[A-Za-z\s]+" oninput="this.value = this.value.replace(/[^A-Za-z\s]/g, '')" required />
+                </div>
+                <small class="text-muted" style="font-size: 11px;">@T("EnterNameHint")</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">@T("MobileNumber")</label>
+                <div class="input-container mobile-input-split">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" value="+91" class="form-input mobile-country-code" readonly />
+                    <input type="tel" id="mobileDigits" class="form-input mobile-digits" placeholder="9876543210" 
+                           maxlength="10" pattern="\d{10}" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required />
+                    <input type="hidden" id="mobileNumber" />
+                </div>
+                <small class="text-muted" style="font-size: 11px;">@T("EnterMobileHint")</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">@T("Password")</label>
+                <div class="input-container">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" class="form-input" placeholder="••••••••" required />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div id="otpSection" style="display: none; margin-top: 15px;">
+                    <label class="form-label text-success">Enter OTP sent to your phone</label>
+                    <div class="input-container">
+                        <i class="fas fa-shield-alt"></i>
+                        <input type="text" id="otp" class="form-input" placeholder="6-digit OTP" />
+                    </div>
+                </div>
+            </div>
+
+            <input type="hidden" id="sessionId" />
+
+            <button type="button" class="login-btn" id="sendOtpBtn">
+                <span>@T("SendOTP")</span>
+                <i class="fas fa-paper-plane"></i>
+            </button>
+
+            <button type="submit" class="login-btn" id="registerBtn" style="display: none;">
+                <span>@T("CompleteRegistration")</span>
+                <i class="fas fa-user-plus"></i>
+            </button>
+        </form>
+
+        <div class="form-footer">
+            <p>@T("AlreadyHaveAccount") <a href="/Account/Login">@T("SignIn")</a></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@@11"></script>
+    <script>
+        $(document).ready(function () {
+            // Add auth-body class to body
+            $('body').addClass('auth-body');
+
+            let userMobile = '';
+
+            $('#sendOtpBtn').on('click', function () {
+                const btn = $(this);
+                const digits = $('#mobileDigits').val();
+                const mobile = '+91' + digits;
+                const fullName = $('#fullName').val();
+
+                if (!fullName || !mobile) {
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Oops...',
+                        text: 'Please enter full name and mobile number'
+                    });
+                    return;
+                }
+
+                btn.prop('disabled', true).html('<span>Sending...</span><i class="fas fa-spinner fa-spin"></i>');
+                
+                $.ajax({
+                    url: '/api/auth/send-otp',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ mobileNumber: mobile, isRealOtp: false }),
+                    success: function (response) {
+                        $('#sessionId').val(response.sessionId);
+                        userMobile = mobile;
+                        
+                        btn.hide();
+                        $('#otpSection').slideDown();
+                        $('#registerBtn').fadeIn();
+                        
+                        Swal.fire({
+                            icon: 'info',
+                            title: 'OTP Sent',
+                            text: 'For demo purposes, please use OTP: 1234',
+                            confirmButtonColor: '#16a34a'
+                        });
+                    },
+                    error: function (xhr) {
+                        btn.prop('disabled', false).html('<span>Send OTP</span><i class="fas fa-paper-plane"></i>');
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: 'Failed to send OTP. Please check your mobile number.'
+                        });
+                    }
+                });
+            });
+
+            $('#registerForm').on('submit', function (e) {
+                e.preventDefault();
+                
+                const regBtn = $('#registerBtn');
+                const errorDiv = $('#formError');
+                const errorText = $('#errorText');
+
+                regBtn.prop('disabled', true).html('<span>Processing...</span><i class="fas fa-spinner fa-spin"></i>');
+                errorDiv.hide();
+
+                const data = {
+                    mobileNumber: userMobile,
+                    password: $('#password').val(),
+                    fullName: $('#fullName').val(),
+                    otp: $('#otp').val(),
+                    sessionId: $('#sessionId').val(),
+                    isRealOtp: false
+                };
+
+                $.ajax({
+                    url: '/api/auth/otp-register',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(data),
+                    success: function (response) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'Registered!',
+                            text: 'Your account has been created successfully.',
+                            showConfirmButton: false,
+                            timer: 2000
+                        }).then(() => {
+                            window.location.href = '/Account/Login';
+                        });
+                    },
+                    error: function (xhr) {
+                        regBtn.prop('disabled', false).html('<span>Complete Registration</span><i class="fas fa-user-plus"></i>');
+                        const msg = xhr.responseJSON?.message || "Registration failed. Try again.";
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Registration Failed',
+                            text: msg
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/modern-login.css" />
+    <style>
+        main { padding-top: 0 !important; }
+        .navbar { display: none !important; }
+        .footer { display: none !important; }
+    </style>
+}

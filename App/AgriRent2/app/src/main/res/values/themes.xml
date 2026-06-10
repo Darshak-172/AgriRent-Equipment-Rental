@@ -1,0 +1,55 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.AgriRent" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    </style>
+
+    <style name="Theme.Agrirent" parent="Base.Theme.AgriRent">
+        <item name="colorPrimary">@color/agri_dark_green</item>
+        <item name="colorPrimaryVariant">@color/agri_dark_green</item>
+        <item name="colorOnPrimary">@color/white</item>
+
+        <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
+        <item name="android:navigationBarColor">@color/background_light</item>
+
+        <item name="android:windowBackground">@color/background_light</item>
+
+        <item name="android:windowLightStatusBar">true</item>
+
+        <item name="actionOverflowMenuStyle">@style/MyOverflowMenu</item>
+        <item name="popupMenuStyle">@style/MyPopupMenu</item>
+    </style>
+
+    <style name="MyOverflowMenu" parent="Widget.AppCompat.PopupMenu.Overflow">
+        <item name="android:tint">@color/white</item>
+    </style>
+
+    <style name="RoundedImageView" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">12dp</item>
+    </style>
+
+    <style name="CircleStyle" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="MyPopupMenu" parent="Widget.AppCompat.PopupMenu">
+        <item name="android:popupBackground">@color/white</item>
+        <item name="android:textColor">@color/agri_dark_green</item>
+    </style>
+
+    <style name="TextAppearance.AppCompat.Widget.PopupMenu.Large" parent="TextAppearance.AppCompat.Widget.PopupMenu.Large" tools:ignore="ResourceCycle">
+        <item name="android:textColor">@color/agri_dark_green</item>
+    </style>
+
+    <style name="TextAppearance.AppCompat.Widget.PopupMenu.Small" parent="TextAppearance.AppCompat.Widget.PopupMenu.Small" tools:ignore="ResourceCycle">
+        <item name="android:textColor">@color/agri_dark_green</item>
+    </style>
+
+    <style name="Theme.Agrirent.FullScreen" parent="Theme.Agrirent">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">false</item>
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+    </style>
+
+</resources>

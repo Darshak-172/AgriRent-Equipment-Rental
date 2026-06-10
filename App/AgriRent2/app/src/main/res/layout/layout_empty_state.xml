@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable Empty State Component -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llEmptyState"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_2xl"
+    android:visibility="gone"
+    android:background="@color/bg_main">
+
+    <!-- Empty State Icon -->
+    <ImageView
+        android:id="@+id/ivEmptyIcon"
+        android:layout_width="@dimen/empty_state_icon_size"
+        android:layout_height="@dimen/empty_state_icon_size"
+        android:layout_marginBottom="@dimen/spacing_2xl"
+        android:scaleType="centerInside"
+        android:tint="@color/text_secondary"
+        app:srcCompat="@drawable/ic_empty_box" />
+
+    <!-- Empty State Title -->
+    <TextView
+        android:id="@+id/tvEmptyTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:text="No items found"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.App.Title"
+        android:textColor="@color/text_primary" />
+
+    <!-- Empty State Subtitle -->
+    <TextView
+        android:id="@+id/tvEmptySubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_2xl"
+        android:text="Try adjusting your search or filters"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.App.Body"
+        android:textColor="@color/text_secondary" />
+
+    <!-- Empty State CTA Button (optional, can be hidden) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEmptyAction"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Take Action"
+        android:visibility="gone"
+        style="@style/Widget.App.MaterialButton" />
+</LinearLayout>

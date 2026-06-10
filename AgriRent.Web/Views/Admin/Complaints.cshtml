@@ -1,0 +1,850 @@
+@model List<AgriRent.ViewModels.AdminComplaintViewModel>
+
+@{
+    ViewData["Title"] = "Complaints";
+    Layout = "_AdminLayout";
+    string cur      = ViewBag.CurrentStatus ?? "All";
+    int pending  = ViewBag.PendingCount  ?? 0;
+    int resolved = ViewBag.ResolvedCount ?? 0;
+    int rejected = ViewBag.RejectedCount ?? 0;
+}
+
+@section Styles {
+<style>
+    :root {
+        --c-pending:  #F59E0B;
+        --c-resolved: #10B981;
+        --c-rejected: #6B7280;
+        --c-equip:    #3B82F6;
+        --c-product:  #8B5CF6;
+    }
+
+    .cp-wrap {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 4px;
+    }
+
+    /* ── Header ─────────────────────────────── */
+    .cp-header {
+        background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+        border-radius: 20px;
+        padding: 28px 32px;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 16px;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .cp-header::before {
+        content: '\f05a';
+        font-family: 'Font Awesome 6 Free';
+        font-weight: 900;
+        position: absolute;
+        right: 32px;
+        top: 50%;
+        transform: translateY(-50%);
+        font-size: 7rem;
+        color: rgba(255,255,255,0.04);
+        pointer-events: none;
+    }
+
+    .cp-header h1 {
+        font-size: 1.6rem;
+        font-weight: 700;
+        color: #fff;
+        margin: 0;
+    }
+
+    .cp-header p {
+        color: rgba(255,255,255,0.55);
+        font-size: 0.85rem;
+        margin: 4px 0 0;
+    }
+
+    .cp-stats {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .cp-stat-pill {
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-size: 0.78rem;
+        font-weight: 700;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    .cp-stat-pill.pending  { background: rgba(245,158,11,0.15);  color: #F59E0B; border: 1px solid rgba(245,158,11,0.3); }
+    .cp-stat-pill.resolved { background: rgba(16,185,129,0.15);  color: #10B981; border: 1px solid rgba(16,185,129,0.3); }
+    .cp-stat-pill.rejected { background: rgba(107,114,128,0.15); color: #9CA3AF; border: 1px solid rgba(107,114,128,0.3); }
+
+    /* ── Alerts ─────────────────────────────── */
+    .cp-alert {
+        border-radius: 12px;
+        border: none;
+        padding: 14px 20px;
+        font-weight: 600;
+        margin-bottom: 16px;
+    }
+
+    /* ── Filter bar ─────────────────────────── */
+    .cp-filters {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .cp-filter {
+        padding: 9px 20px;
+        border-radius: 10px;
+        text-decoration: none !important;
+        font-weight: 600;
+        font-size: 0.83rem;
+        color: #64748b;
+        background: #fff;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.2s;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .cp-filter:hover { background: #f8fafc; color: #3B82F6; border-color: #3B82F6; }
+    .cp-filter.active-all      { background: #1e40af; color: #fff; border-color: #1e40af; }
+    .cp-filter.active-pending  { background: var(--c-pending);  color: #fff; border-color: var(--c-pending); }
+    .cp-filter.active-resolved { background: var(--c-resolved); color: #fff; border-color: var(--c-resolved); }
+    .cp-filter.active-rejected { background: var(--c-rejected); color: #fff; border-color: var(--c-rejected); }
+
+    /* ── Search ─────────────────────────────── */
+    .cp-search {
+        width: 260px;
+        padding: 9px 14px 9px 36px;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        outline: none;
+        transition: border-color 0.2s;
+        background: #fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2'%3E%3Ccircle cx='11' cy='11' r='8'/%3E%3Cpath d='m21 21-4.35-4.35'/%3E%3C/svg%3E") no-repeat 12px center;
+    }
+
+    .cp-search:focus { border-color: #3B82F6; }
+
+    /* ── Table ──────────────────────────────── */
+    .cp-table-card {
+        background: #fff;
+        border-radius: 16px;
+        box-shadow: 0 2px 16px rgba(0,0,0,0.06);
+        overflow: hidden;
+    }
+
+    .cp-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 0.875rem;
+    }
+
+    .cp-table thead tr {
+        background: #f8fafc;
+        border-bottom: 2px solid #e2e8f0;
+    }
+
+    .cp-table th {
+        padding: 13px 16px;
+        font-weight: 700;
+        font-size: 0.72rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: #64748b;
+        white-space: nowrap;
+    }
+
+    .cp-table td {
+        padding: 14px 16px;
+        border-bottom: 1px solid #f1f5f9;
+        vertical-align: middle;
+        color: #1e293b;
+    }
+
+    .cp-table tbody tr:last-child td { border-bottom: none; }
+
+    .cp-table tbody tr:hover { background: #fafbff; }
+
+    /* ── Badges ─────────────────────────────── */
+    .badge-status {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 0.72rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        white-space: nowrap;
+    }
+
+    .badge-pending  { background: #FEF3C7; color: #92400E; }
+    .badge-resolved { background: #D1FAE5; color: #065F46; }
+    .badge-rejected { background: #F3F4F6; color: #374151; }
+
+    .badge-target {
+        padding: 3px 10px;
+        border-radius: 6px;
+        font-size: 0.70rem;
+        font-weight: 700;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .badge-equip   { background: #DBEAFE; color: #1D4ED8; }
+    .badge-product { background: #EDE9FE; color: #6D28D9; }
+
+    /* ── Target cell (image + info) ───────────── */
+    .target-cell {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: opacity 0.2s;
+    }
+    
+    .target-cell:hover { opacity: 0.8; }
+    
+    .target-image {
+        width: 50px;
+        height: 50px;
+        border-radius: 8px;
+        object-fit: cover;
+        background: #f1f5f9;
+        flex-shrink: 0;
+        border: 1px solid #e2e8f0;
+    }
+    
+    .target-info {
+        display: flex;
+        flex-direction: column;
+        gap: 2px;
+    }
+    
+    .target-info-name {
+        font-weight: 600;
+        color: #1e293b;
+        font-size: 0.85rem;
+    }
+    
+    .target-info-owner {
+        color: #64748b;
+        font-size: 0.75rem;
+    }
+
+    /* ── Description cell ───────────────────── */
+    .desc-cell {
+        max-width: 240px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+        color: #475569;
+        font-size: 0.84rem;
+    }
+
+    /* ── Action buttons ─────────────────────── */
+    .btn-action {
+        padding: 5px 13px;
+        border-radius: 8px;
+        font-size: 0.76rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        transition: all 0.2s;
+        text-decoration: none;
+    }
+
+    .btn-resolve { background: #D1FAE5; color: #065F46; }
+    .btn-resolve:hover { background: #10B981; color: #fff; }
+
+    .btn-reject  { background: #FEE2E2; color: #991B1B; }
+    .btn-reject:hover  { background: #EF4444; color: #fff; }
+
+    .btn-view    { background: #DBEAFE; color: #1D4ED8; }
+    .btn-view:hover    { background: #3B82F6; color: #fff; }
+
+    .btn-details { background: #F3E8FF; color: #6D28D9; }
+    .btn-details:hover { background: #7C3AED; color: #fff; }
+
+    /* ── Details modal ──────────────────────── */
+    .detail-section {
+        margin-bottom: 18px;
+    }
+    .detail-section-title {
+        font-size: 0.68rem;
+        font-weight: 800;
+        text-transform: uppercase;
+        letter-spacing: .07em;
+        color: #94a3b8;
+        margin-bottom: 8px;
+        padding-bottom: 6px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+    .detail-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 6px;
+        font-size: 0.84rem;
+    }
+    .detail-label { color: #94a3b8; min-width: 110px; flex-shrink: 0; }
+    .detail-value { color: #1e293b; font-weight: 600; word-break: break-word; }
+
+    /* ── Empty state ────────────────────────── */
+    .cp-empty {
+        text-align: center;
+        padding: 60px 20px;
+        color: #94a3b8;
+    }
+
+    .cp-empty i { font-size: 3.5rem; margin-bottom: 16px; display: block; opacity: 0.4; }
+    .cp-empty h4 { font-weight: 700; color: #475569; font-size: 1.1rem; margin-bottom: 6px; }
+    .cp-empty p  { font-size: 0.85rem; }
+
+    /* ── Modal ──────────────────────────────── */
+    .cp-modal-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,0.45);
+        backdrop-filter: blur(3px);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .cp-modal-overlay.open { display: flex; }
+
+    .cp-modal {
+        background: #fff;
+        border-radius: 20px;
+        padding: 32px;
+        width: 480px;
+        max-width: 95vw;
+        box-shadow: 0 20px 60px rgba(0,0,0,0.15);
+        animation: modalIn 0.25s ease;
+    }
+
+    @@keyframes modalIn {
+        from { transform: translateY(20px); opacity: 0; }
+        to   { transform: translateY(0);    opacity: 1; }
+    }
+
+    .cp-modal h4 { font-size: 1.1rem; font-weight: 700; margin-bottom: 6px; }
+    .cp-modal p  { font-size: 0.84rem; color: #64748b; margin-bottom: 20px; }
+
+    .cp-modal textarea {
+        width: 100%;
+        border: 1.5px solid #e2e8f0;
+        border-radius: 10px;
+        padding: 12px 14px;
+        font-size: 0.86rem;
+        resize: vertical;
+        outline: none;
+        min-height: 100px;
+        transition: border-color 0.2s;
+        font-family: inherit;
+    }
+
+    .cp-modal textarea:focus { border-color: #3B82F6; }
+
+    .cp-modal-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 16px;
+        justify-content: flex-end;
+    }
+
+    .btn-modal-confirm {
+        padding: 9px 22px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+
+    .btn-modal-confirm.green  { background: #10B981; color: #fff; }
+    .btn-modal-confirm.green:hover  { background: #059669; }
+    .btn-modal-confirm.red    { background: #EF4444; color: #fff; }
+    .btn-modal-confirm.red:hover    { background: #DC2626; }
+    .btn-modal-cancel {
+        padding: 9px 22px;
+        border-radius: 10px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        background: #f1f5f9;
+        color: #64748b;
+        border: none;
+        cursor: pointer;
+    }
+
+    .btn-modal-cancel:hover { background: #e2e8f0; }
+
+    @@media (max-width: 768px) {
+        .cp-header { padding: 20px; }
+        .desc-cell { max-width: 140px; }
+        .cp-table th:nth-child(3),
+        .cp-table td:nth-child(3) { display: none; }
+    }
+</style>
+}
+
+<div class="cp-wrap">
+
+    <!-- Header -->
+    <div class="cp-header">
+        <div>
+            <h1><i class="fa-solid fa-circle-exclamation me-2"></i>Complaints</h1>
+            <p>Review and resolve user complaints about equipment and products</p>
+        </div>
+        <div class="cp-stats">
+            <span class="cp-stat-pill pending"><i class="fa-solid fa-clock"></i> @pending Pending</span>
+            <span class="cp-stat-pill resolved"><i class="fa-solid fa-check-circle"></i> @resolved Resolved</span>
+            <span class="cp-stat-pill rejected"><i class="fa-solid fa-times-circle"></i> @rejected Rejected</span>
+        </div>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success cp-alert alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-check-double me-2"></i>@TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger cp-alert alert-dismissible fade show" role="alert">
+            <i class="fa-solid fa-triangle-exclamation me-2"></i>@TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    <!-- Toolbar: filters + search -->
+    <div class="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-3">
+        <div class="cp-filters">
+            <a href="/Admin/Complaints"                  class="cp-filter @(cur == "All"      ? "active-all"      : "")"><i class="fa-solid fa-border-all"></i> All</a>
+            <a href="/Admin/Complaints?status=Pending"   class="cp-filter @(cur == "Pending"  ? "active-pending"  : "")"><i class="fa-solid fa-clock"></i> Pending</a>
+            <a href="/Admin/Complaints?status=Resolved"  class="cp-filter @(cur == "Resolved" ? "active-resolved" : "")"><i class="fa-solid fa-check-circle"></i> Resolved</a>
+            <a href="/Admin/Complaints?status=Rejected"  class="cp-filter @(cur == "Rejected" ? "active-rejected" : "")"><i class="fa-solid fa-times-circle"></i> Rejected</a>
+        </div>
+        <input type="text" id="cpSearch" class="cp-search" placeholder="Search complaints..." oninput="filterTable()" />
+    </div>
+
+    <!-- Table -->
+    <div class="cp-table-card">
+        @if (!Model.Any())
+        {
+            <div class="cp-empty">
+                <i class="fa-solid fa-circle-exclamation"></i>
+                <h4>No complaints found</h4>
+                <p>There are no complaints matching "@cur"</p>
+            </div>
+        }
+        else
+        {
+            <table class="cp-table" id="cpTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Filed By</th>
+                        <th>Target</th>
+                        <th>Description</th>
+                        <th>Status</th>
+                        <th>Date</th>
+                        <th class="text-end">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int idx = 0; }
+                    @foreach (var c in Model)
+                    {
+                        idx++;
+                        <tr>
+                            <td style="color:#94a3b8;font-weight:600;">@idx</td>
+                            <td>
+                                <div style="font-weight:600;">@c.FiledBy</div>
+                                <div style="font-size:0.74rem;color:#94a3b8;">ID #@c.UserId</div>
+                            </td>
+                            <td>
+                                <div class="target-cell" onclick="showTargetDetails(@c.TargetId, '@c.TargetType')">
+                                    @if (!string.IsNullOrEmpty(c.TargetImageUrl))
+                                    {
+                                        <img src="@c.TargetImageUrl" alt="@c.TargetName" class="target-image" />
+                                    }
+                                    else
+                                    {
+                                        <div class="target-image" style="display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:#94a3b8;">
+                                            @if (c.TargetType == "Equipment")
+                                            {
+                                                <i class="fa-solid fa-tractor"></i>
+                                            }
+                                            else
+                                            {
+                                                <i class="fa-solid fa-box"></i>
+                                            }
+                                        </div>
+                                    }
+                                    <div class="target-info">
+                                        <div class="target-info-name">@(string.IsNullOrEmpty(c.TargetName) ? (c.TargetType == "Equipment" ? $"Equipment #{c.TargetId}" : $"Product #{c.TargetId}") : c.TargetName)</div>
+                                        <div class="target-info-owner">@c.OwnerOrSellerName</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td><div class="desc-cell" title="@c.Description">@c.Description</div></td>
+                            <td>
+                                @if (c.Status == "Pending")
+                                {
+                                    <span class="badge-status badge-pending"><i class="fa-solid fa-clock"></i> Pending</span>
+                                }
+                                else if (c.Status == "Resolved")
+                                {
+                                    <span class="badge-status badge-resolved"><i class="fa-solid fa-check-circle"></i> Resolved</span>
+                                }
+                                else
+                                {
+                                    <span class="badge-status badge-rejected"><i class="fa-solid fa-times-circle"></i> Rejected</span>
+                                }
+                            </td>
+                            <td style="color:#64748b;font-size:0.8rem;white-space:nowrap;">@c.CreatedAt.ToString("dd MMM yyyy")</td>
+                            <td class="text-end">
+                                <div class="d-flex gap-2 justify-content-end">
+                                    <button class="btn-action btn-details" onclick="showDetails(@(idx-1))">
+                                        <i class="fa-solid fa-circle-info"></i> Details
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+    </div>
+
+</div>
+
+<!-- Resolve Modal -->
+<div class="cp-modal-overlay" id="resolveModal">
+    <div class="cp-modal">
+        <h4><i class="fa-solid fa-check-circle me-2 text-success"></i>Resolve Complaint</h4>
+        <p>Provide a resolution note explaining how the complaint was addressed.</p>
+        <form method="post" action="/Admin/ResolveComplaint">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="resolveId" />
+            <input type="hidden" name="returnStatus" value="@cur" />
+            <textarea name="resolutionNote" placeholder="Enter resolution details... (optional)" rows="4"></textarea>
+            <div class="cp-modal-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('resolveModal')">Cancel</button>
+                <button type="submit" class="btn-modal-confirm green"><i class="fa-solid fa-check me-1"></i>Resolve</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="cp-modal-overlay" id="rejectModal">
+    <div class="cp-modal">
+        <h4><i class="fa-solid fa-times-circle me-2 text-danger"></i>Reject Complaint</h4>
+        <p>Provide a reason for rejecting this complaint.</p>
+        <form method="post" action="/Admin/RejectComplaint">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="id" id="rejectId" />
+            <input type="hidden" name="returnStatus" value="@cur" />
+            <textarea name="resolutionNote" placeholder="Reason for rejection... (optional)" rows="4"></textarea>
+            <div class="cp-modal-actions">
+                <button type="button" class="btn-modal-cancel" onclick="closeModal('rejectModal')">Cancel</button>
+                <button type="submit" class="btn-modal-confirm red"><i class="fa-solid fa-times me-1"></i>Reject</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Note View Modal -->
+<div class="cp-modal-overlay" id="noteModal">
+    <div class="cp-modal">
+        <h4 id="noteModalTitle"></h4>
+        <div id="noteModalResolver" style="display:none;margin-bottom:14px;font-size:0.84rem;color:#64748b;background:#f8fafc;border-radius:8px;padding:8px 12px;border:1px solid #e2e8f0;"></div>
+        <p id="noteModalBody" style="color:#374151;font-size:0.92rem;white-space:pre-wrap;background:#f8fafc;border-radius:10px;padding:12px 14px;border:1px solid #e2e8f0;margin:0;"></p>
+        <div class="cp-modal-actions">
+            <button type="button" class="btn-modal-cancel" onclick="closeModal('noteModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Details Modal -->
+<div class="cp-modal-overlay" id="detailsModal">
+    <div class="cp-modal" style="width:560px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h4 style="margin:0;"><i class="fa-solid fa-circle-info me-2" style="color:#7C3AED;"></i>Complaint Details</h4>
+            <button type="button" class="btn-modal-cancel" style="padding:4px 12px;" onclick="closeModal('detailsModal')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-section-title"><i class="fa-solid fa-circle-exclamation me-1"></i>Complaint Info</div>
+            <div class="detail-row"><span class="detail-label">Complaint ID</span><span class="detail-value" id="d-id"></span></div>
+            <div class="detail-row"><span class="detail-label">Filed By</span><span class="detail-value" id="d-filedby"></span></div>
+            <div class="detail-row"><span class="detail-label">Status</span><span class="detail-value" id="d-status"></span></div>
+            <div class="detail-row"><span class="detail-label">Date Filed</span><span class="detail-value" id="d-date"></span></div>
+            <div class="detail-row" style="align-items:flex-start;"><span class="detail-label">Description</span><span class="detail-value" id="d-desc" style="white-space:pre-wrap;"></span></div>
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-section-title"><i class="fa-solid fa-tractor me-1"></i>Target Info</div>
+            <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" id="d-type"></span></div>
+            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value" id="d-targetname"></span></div>
+            <div class="detail-row"><span class="detail-label" id="d-ownerlabel">Owner</span><span class="detail-value" id="d-owner"></span></div>
+        </div>
+
+        <div class="detail-section" id="d-resolution-section" style="display:none;">
+            <div class="detail-section-title" id="d-resolution-title"><i class="fa-solid fa-check-circle me-1"></i>Resolution</div>
+            <div class="detail-row"><span class="detail-label">Actioned By</span><span class="detail-value" id="d-resolvedby"></span></div>
+            <div class="detail-row"><span class="detail-label">Date</span><span class="detail-value" id="d-resolvedat"></span></div>
+            <div class="detail-row" style="align-items:flex-start;" id="d-note-row"><span class="detail-label">Note</span><span class="detail-value" id="d-note" style="white-space:pre-wrap;font-style:italic;color:#475569;"></span></div>
+        </div>
+
+        <div class="cp-modal-actions">
+            <div id="d-action-buttons" style="display:none;">
+                <button type="button" class="btn-modal-confirm green" onclick="openResolveModal()" style="margin-right:8px;">
+                    <i class="fa-solid fa-check me-1"></i>Resolve
+                </button>
+                <button type="button" class="btn-modal-confirm red" onclick="openRejectModal()">
+                    <i class="fa-solid fa-times me-1"></i>Reject
+                </button>
+            </div>
+            <button type="button" class="btn-modal-cancel" onclick="closeModal('detailsModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+<!-- Target Details Modal -->
+<div class="cp-modal-overlay" id="targetDetailsModal">
+    <div class="cp-modal" style="width:600px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+            <h4 style="margin:0;"><i class="fa-solid fa-circle-info me-2" style="color:#7C3AED;"></i><span id="td-title">Details</span></h4>
+            <button type="button" class="btn-modal-cancel" style="padding:4px 12px;" onclick="closeModal('targetDetailsModal')"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <div style="text-align:center;margin-bottom:20px;">
+            <img id="td-image" src="" alt="Image" style="max-width:100%;max-height:300px;border-radius:12px;border:1px solid #e2e8f0;" />
+        </div>
+
+        <div class="detail-section">
+            <div class="detail-section-title"><i class="fa-solid fa-circle-info me-1"></i>Information</div>
+            <div class="detail-row"><span class="detail-label">Type</span><span class="detail-value" id="td-type"></span></div>
+            <div class="detail-row"><span class="detail-label">Name</span><span class="detail-value" id="td-name"></span></div>
+            <div class="detail-row"><span class="detail-label">Owner</span><span class="detail-value" id="td-owner"></span></div>
+            <div class="detail-row" style="align-items:flex-start;"><span class="detail-label">Description</span><span class="detail-value" id="td-description" style="white-space:pre-wrap;"></span></div>
+        </div>
+
+        <div class="cp-modal-actions">
+            <button type="button" class="btn-modal-cancel" onclick="closeModal('targetDetailsModal')">Close</button>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    // Global variables
+    let currentComplaintId = null;
+    let currentComplaintStatus = null;
+
+    // Serialize all complaint data into JS array
+    const cpData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model.Select((c, i) => new {
+        id         = c.ComplaintId,
+        filedBy    = c.FiledBy,
+        userId     = c.UserId,
+        targetId   = c.TargetId,
+        targetType = c.TargetType,
+        targetName = c.TargetName,
+        ownerOrSellerName = c.OwnerOrSellerName,
+        description = c.Description,
+        status     = c.Status,
+        resolutionNote = c.ResolutionNote,
+        resolvedByName = c.ResolvedByName,
+        resolvedByRole = c.ResolvedByRole,
+        createdAt  = c.CreatedAt.ToString("dd MMM yyyy"),
+        resolvedAt = c.ResolvedAt.HasValue ? c.ResolvedAt.Value.ToString("dd MMM yyyy") : null
+    })));
+
+    function openResolveModal() {
+        if (currentComplaintId) {
+            closeModal('detailsModal');
+            document.getElementById('resolveId').value = currentComplaintId;
+            document.getElementById('resolveModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function openRejectModal() {
+        if (currentComplaintId) {
+            closeModal('detailsModal');
+            document.getElementById('rejectId').value = currentComplaintId;
+            document.getElementById('rejectModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function openModal(type, id) {
+        if (type === 'resolve') {
+            document.getElementById('resolveId').value = id;
+            document.getElementById('resolveModal').classList.add('open');
+        } else {
+            document.getElementById('rejectId').value = id;
+            document.getElementById('rejectModal').classList.add('open');
+        }
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal(id) {
+        document.getElementById(id).classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function showDetails(idx) {
+        const c = cpData[idx];
+        if (!c) return;
+
+        // Store current complaint ID for resolve/reject actions
+        currentComplaintId = c.id;
+        currentComplaintStatus = c.status;
+
+        document.getElementById('d-id').textContent      = '#' + c.id;
+        document.getElementById('d-filedby').textContent = c.filedBy + ' (ID #' + c.userId + ')';
+        document.getElementById('d-desc').textContent    = c.description || '-';
+        document.getElementById('d-date').textContent    = c.createdAt;
+        document.getElementById('d-targetname').textContent = c.targetName || ('ID #' + c.targetId);
+        document.getElementById('d-owner').textContent      = c.ownerOrSellerName || 'N/A';
+        document.getElementById('d-ownerlabel').textContent = c.targetType === 'Equipment' ? 'Owner' : 'Seller';
+
+        // Type badge
+        const isEquip = c.targetType === 'Equipment';
+        document.getElementById('d-type').innerHTML = isEquip
+            ? '<span style="background:#DBEAFE;color:#1D4ED8;padding:2px 10px;border-radius:6px;font-size:0.72rem;">Equipment</span>'
+            : '<span style="background:#EDE9FE;color:#6D28D9;padding:2px 10px;border-radius:6px;font-size:0.72rem;">Product</span>';
+
+        // Status badge
+        const statusColors = { Pending: '#FEF3C7:#92400E', Resolved: '#D1FAE5:#065F46', Rejected: '#F3F4F6:#374151' };
+        const [bg, fg] = (statusColors[c.status] || '#F3F4F6:#374151').split(':');
+        document.getElementById('d-status').innerHTML =
+            `<span style="background:${bg};color:${fg};padding:2px 10px;border-radius:6px;font-size:0.72rem;font-weight:700;">${c.status}</span>`;
+
+        // Show resolve/reject buttons only for Pending complaints
+        const actionButtons = document.getElementById('d-action-buttons');
+        if (c.status === 'Pending') {
+            actionButtons.style.display = '';
+        } else {
+            actionButtons.style.display = 'none';
+        }
+
+        // Resolution section
+        const resSec = document.getElementById('d-resolution-section');
+        if (c.status !== 'Pending') {
+            resSec.style.display = '';
+            const title = document.getElementById('d-resolution-title');
+            if (c.status === 'Resolved') {
+                title.innerHTML = '<i class="fa-solid fa-check-circle me-1" style="color:#10B981;"></i>Resolution';
+            } else {
+                title.innerHTML = '<i class="fa-solid fa-times-circle me-1" style="color:#EF4444;"></i>Rejection';
+            }
+
+            // Resolved by
+            if (c.resolvedByName) {
+                let resolvedByHTML = c.resolvedByName;
+                
+                // Only show "Admin" badge if rejected (admin only) or if resolved by admin
+                if (c.status === 'Rejected' || c.resolvedByRole === 'Admin') {
+                    resolvedByHTML += '<span style="background:#DBEAFE;color:#1D4ED8;padding:1px 8px;border-radius:6px;font-size:0.68rem;margin-left:6px;">Admin</span>';
+                }
+                
+                document.getElementById('d-resolvedby').innerHTML = resolvedByHTML;
+            } else {
+                document.getElementById('d-resolvedby').textContent = 'N/A';
+            }
+
+            document.getElementById('d-resolvedat').textContent = c.resolvedAt || '-';
+            document.getElementById('d-note').textContent       = c.resolutionNote || '(No note provided)';
+        } else {
+            resSec.style.display = 'none';
+        }
+
+        document.getElementById('detailsModal').classList.add('open');
+        document.body.style.overflow = 'hidden';
+    }
+
+    async function showTargetDetails(targetId, targetType) {
+        try {
+            const endpoint = targetType === 'Equipment' ? `/api/equipment/admin/details/${targetId}` : `/api/products/admin/details/${targetId}`;
+            console.log('Fetching from endpoint:', endpoint);
+            const response = await fetch(endpoint);
+            
+            if (!response.ok) {
+                const errorText = await response.text();
+                console.error('API Error - Status:', response.status, 'Response:', errorText);
+                throw new Error(`API Error: ${response.status} - ${errorText}`);
+            }
+            
+            const data = await response.json();
+            console.log('Fetched data:', data);
+            
+            // Set title and type
+            document.getElementById('td-title').textContent = targetType === 'Equipment' ? 'Equipment Details' : 'Product Details';
+            document.getElementById('td-type').innerHTML = targetType === 'Equipment' 
+                ? '<span style="background:#DBEAFE;color:#1D4ED8;padding:2px 10px;border-radius:6px;font-size:0.72rem;">Equipment</span>'
+                : '<span style="background:#EDE9FE;color:#6D28D9;padding:2px 10px;border-radius:6px;font-size:0.72rem;">Product</span>';
+            
+            // Set image
+            const imgEl = document.getElementById('td-image');
+            if (data.imageUrl) {
+                imgEl.src = data.imageUrl;
+                imgEl.style.display = '';
+            } else {
+                imgEl.style.display = 'none';
+            }
+            
+            // Set information - handle both Equipment and Product responses
+            const name = data.equipmentName || data.productName || 'Unknown';
+            const ownerName = (targetType === 'Equipment' ? data.owner?.fullName : data.seller?.fullName) || 'N/A';
+            document.getElementById('td-name').textContent = name;
+            document.getElementById('td-owner').textContent = ownerName;
+            document.getElementById('td-description').textContent = data.description || 'No description';
+            
+            // Open modal
+            document.getElementById('targetDetailsModal').classList.add('open');
+            document.body.style.overflow = 'hidden';
+        } catch (error) {
+            console.error('Error loading target details:', error);
+            alert('Failed to load ' + targetType.toLowerCase() + ' details: ' + error.message);
+        }
+    }
+
+    // Close on backdrop click
+    document.querySelectorAll('.cp-modal-overlay').forEach(el => {
+        el.addEventListener('click', e => { if (e.target === el) closeModal(el.id); });
+    });
+
+    // Client-side search
+    function filterTable() {
+        const q = document.getElementById('cpSearch').value.toLowerCase();
+        document.querySelectorAll('#cpTable tbody tr').forEach(row => {
+            row.style.display = row.textContent.toLowerCase().includes(q) ? '' : 'none';
+        });
+    }
+</script>
+}

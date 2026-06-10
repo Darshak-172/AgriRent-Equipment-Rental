@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Semantic Theme Colors (Dark) -->
+    <color name="bg_main">#11161A</color>
+    <color name="card_bg">#1E252D</color>
+    <color name="search_bg">#1E252D</color>
+    <color name="text_primary">#FFFFFF</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="bottom_nav_icon_color">#A0A0A0</color>
+    <color name="weather_card_bg">#1D4C61</color>
+    <color name="agri_plus_bg">#11291B</color>
+</resources>

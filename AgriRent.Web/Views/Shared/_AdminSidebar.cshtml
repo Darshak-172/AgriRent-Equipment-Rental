@@ -1,0 +1,55 @@
+
+
+@{
+    var currentPage = Context.Request.Path.Value?.ToLower();
+}
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-wrapper">
+            <i class="fa-solid fa-leaf"></i>
+            <h4>AgriRent</h4>
+        </div>
+        <span class="premium-tag">Premium Management</span>
+    </div>
+
+    <div class="menu-label">Main Menu</div>
+    <nav class="sidebar-menu">
+        <a class="nav-link @(currentPage == "/admin/dashboard" || currentPage == "/admin" ? "active" : "")" href="/Admin/Dashboard">
+            <i class="fa-solid fa-chart-line"></i> <span>Dashboard</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/users" ? "active" : "")" href="/Admin/Users">
+            <i class="fa-solid fa-users"></i> <span>Users</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/pendingequipments" ? "active" : "")" href="/Admin/PendingEquipments">
+            <i class="fa-solid fa-tractor"></i> <span>Equipments</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/pendingproducts" ? "active" : "")" href="/Admin/PendingProducts">
+            <i class="fa-solid fa-box"></i> <span>Products</span>
+        </a>
+        <a class="nav-link @((currentPage != null && currentPage.StartsWith("/admincategory")) ? "active" : "")" href="/AdminCategory">
+            <i class="fa-solid fa-layer-group"></i> <span>Categories</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/complaints" ? "active" : "")" href="/Admin/Complaints">
+            <i class="fa-solid fa-circle-exclamation"></i> <span>Complaints</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/reviews" ? "active" : "")" href="/Admin/Reviews">
+            <i class="fa-solid fa-star"></i> <span>Reviews</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/subscriptions" ? "active" : "")" href="/Admin/Subscriptions">
+            <i class="fa-solid fa-list-check"></i> <span>Plans</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/payments" ? "active" : "")" href="/Admin/Payments">
+            <i class="fa-solid fa-credit-card"></i> <span>Payments</span>
+        </a>
+        <a class="nav-link @(currentPage == "/admin/reports" ? "active" : "")" href="/Admin/Reports">
+            <i class="fa-solid fa-chart-pie"></i> <span>Reports</span>
+        </a>
+    </nav>
+    
+    <div class="sidebar-footer">
+        <a href="/Admin/Logout" class="nav-link logout-link">
+            <i class="fa-solid fa-right-from-bracket"></i> <span>Logout</span>
+        </a>
+    </div>
+</aside>

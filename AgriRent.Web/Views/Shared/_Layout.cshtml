@@ -1,0 +1,445 @@
+@using AgriRent.Web.Services
+@{
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+<!DOCTYPE html>
+<html lang="@currentLanguage">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - AgriRent</title>
+    <link rel="icon" type="image/png" href="~/images/agrirent_logo.png" />
+    <link rel="shortcut icon" href="~/images/agrirent_logo.png" type="image/x-icon" />
+
+
+
+    <script type="importmap"></script>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <!-- FIX: Preload font and use font-display: optional to prevent render blocking -->
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=optional" as="style" onload="this.onload=null;this.rel='stylesheet'">
+    <noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=optional"></noscript>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/AgriRent.styles.css" asp-append-version="true" />
+    
+    <!-- Global Loading Spinner Styles -->
+    <style>
+        .page-loader {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 255, 0.25);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 99999;
+            transition: opacity 0.4s ease-in-out;
+        }
+
+        .page-loader.fade-out {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .page-loader.hidden {
+            display: none;
+        }
+
+        .loader-content {
+            text-align: center;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 40px 60px;
+            border-radius: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+            animation: fadeInScale 0.3s ease-out;
+        }
+
+        @@keyframes fadeInScale {
+            0% { opacity: 0; transform: scale(0.9); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
+        .spinner {
+            width: 70px;
+            height: 70px;
+            margin: 0 auto 20px;
+            border: 5px solid rgba(40, 167, 69, 0.15);
+            border-top: 5px solid #28a745;
+            border-radius: 50%;
+            animation: spin 1s cubic-bezier(0.68, -0.55, 0.265, 1.55) infinite;
+            box-shadow: 0 3px 10px rgba(40, 167, 69, 0.2);
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loader-text {
+            color: #28a745;
+            font-size: 20px;
+            font-weight: 700;
+            margin-top: 15px;
+            margin-bottom: 8px;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @@keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.6; }
+        }
+
+        .loader-subtext {
+            color: #666;
+            font-size: 15px;
+            margin-top: 5px;
+            font-weight: 500;
+        }
+
+        body.loading {
+            overflow: hidden;
+        }
+    </style>
+    
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+
+<body>
+    <!-- Global Page Loader -->
+    <div class="page-loader" id="globalPageLoader">
+        <div class="loader-content">
+            <div class="spinner"></div>
+            <div class="loader-text">@T("Loading")</div>
+            <div class="loader-subtext">@T("LoadingAgriRent")</div>
+        </div>
+    </div>
+
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm fixed-top">
+            <div class="container-fluid px-4">
+                <a class="navbar-brand d-flex align-items-center me-4" asp-area="" asp-controller="Home" asp-action="Index" style="text-decoration: none;">
+                    <picture>
+                        <source srcset="~/images/agrirent_logo.png" type="image/png">
+                        <img src="~/images/agrirent_logo.png" alt="AgriRent" height="80" class="me-2" style="max-width: 80px;" loading="lazy">
+                    </picture>
+                    <span class="fw-bold fs-3 text-success">AgriRent</span>
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav"
+                    aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link active" asp-area="" asp-controller="Home" asp-action="Index">
+                                <i class="fas fa-home me-1"></i> @T("Home")
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            @if (Context.Session.GetString("UserName") != null)
+                            {
+                                <a class="nav-link" href="/Equipment">
+                                    <i class="fas fa-tractor me-1"></i> @T("RentEquipment")
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="nav-link" href="/Account/Login">
+                                    <i class="fas fa-tractor me-1"></i> @T("RentEquipment")
+                                </a>
+                            }
+                        </li>
+                         <li class="nav-item">
+                            @if (Context.Session.GetString("UserName") != null)
+                            {
+                                <a class="nav-link" href="/Products">
+                                    <i class="fas fa-shopping-cart me-1"></i> @T("BuyProducts")
+                                </a>
+                            }
+                            else
+                            {
+                                <a class="nav-link" href="/Account/Login">
+                                    <i class="fas fa-shopping-cart me-1"></i> @T("BuyProducts")
+                                </a>
+                            }
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Subscription">
+                                <i class="fas fa-crown me-1 text-warning"></i> @T("Premium")
+                            </a>
+                        </li>
+                        @{
+                            var _userRoles = Context.Session.GetString("UserRoles") ?? "";
+                            bool _isOwner = _userRoles.Contains("EquipmentOwner") || _userRoles.Contains("Owner");
+                            bool _isSeller = _userRoles.Contains("Seller");
+                        }
+                        @if (_isSeller)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="/Seller/Dashboard"
+                                   style="color:#b45309;">
+                                    <i class="fas fa-shop me-1" style="color:#f59e0b;"></i>
+                                    Seller Dashboard
+                                    <span style="display:inline-block;width:6px;height:6px;background:#f59e0b;border-radius:50%;margin-left:4px;vertical-align:middle;"></span>
+                                </a>
+                            </li>
+                        }
+                        @if (_isOwner)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link fw-semibold" href="/Owner/Dashboard"
+                                   style="color:#1b5e20;">
+                                    <i class="fas fa-tractor me-1" style="color:#00c853;"></i>
+                                    Equipment Dashboard
+                                    <span style="display:inline-block;width:6px;height:6px;background:#00c853;border-radius:50%;margin-left:4px;vertical-align:middle;"></span>
+                                </a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a class="nav-link" href="/Home/Contact">
+                                <i class="fas fa-envelope me-1"></i> @T("Contact")
+                            </a>
+                        </li>
+                    </ul>
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- Language Selector -->
+                        <div class="dropdown">
+                            <button class="btn btn-outline-secondary btn-sm rounded-pill dropdown-toggle" type="button" id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                <i class="fas fa-globe me-1"></i> 
+                                @{
+                                    var currentLang = Context.Session.GetString("Language") ?? "en";
+                                    var langDisplay = currentLang switch {
+                                        "gu" => "ગુજરાતી",
+                                        "hi" => "हिंदी",
+                                        _ => "English"
+                                    };
+                                }
+                                <span id="currentLang">@langDisplay</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="languageDropdown">
+                                <li><a class="dropdown-item" href="#" onclick="changeLanguage('en'); return false;"><i class="fas fa-check me-2" style="visibility: @(currentLang == "en" ? "visible" : "hidden")"></i>English</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeLanguage('gu'); return false;"><i class="fas fa-check me-2" style="visibility: @(currentLang == "gu" ? "visible" : "hidden")"></i>ગુજરાતી</a></li>
+                                <li><a class="dropdown-item" href="#" onclick="changeLanguage('hi'); return false;"><i class="fas fa-check me-2" style="visibility: @(currentLang == "hi" ? "visible" : "hidden")"></i>हिंदी</a></li>
+                            </ul>
+                        </div>
+
+                        @if (Context.Session.GetString("UserName") != null)
+                        {
+                            // Show DisplayName if available (translated), otherwise fallback to UserName
+                            var displayName = Context.Session.GetString("DisplayName") ?? Context.Session.GetString("UserName") ?? "User";
+                            
+                            <!-- Profile Dropdown -->
+                            <div class="dropdown">
+                                <button class="btn btn-success btn-sm rounded-pill dropdown-toggle px-3" type="button" id="profileDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                                    <i class="fas fa-user-circle me-1"></i> @displayName
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="profileDropdown">
+                                    <li><h6 class="dropdown-header">@displayName</h6></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item" href="/Profile"><i class="fas fa-user me-2"></i>@T("ViewProfile")</a></li>
+                                    <li><a class="dropdown-item" href="/Profile/Edit"><i class="fas fa-edit me-2"></i>@T("EditProfile")</a></li>
+                                    <li><a class="dropdown-item" href="/Profile/ChangePassword"><i class="fas fa-key me-2"></i>@T("ChangePassword")</a></li>
+                                    <li><hr class="dropdown-divider"></li>
+                                    <li><a class="dropdown-item text-danger" href="/Account/Logout"><i class="fas fa-sign-out-alt me-2"></i>@T("Logout")</a></li>
+                                </ul>
+                            </div>
+                        }
+                        else
+                        {
+                            <a class="btn btn-success btn-sm rounded-pill px-4" href="/Account/Login">
+                                <i class="fas fa-sign-in-alt me-1"></i> @T("Login")
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+    
+    <!-- Main Content -->
+    <main role="main" class="pb-3" style="padding-top: 70px;">
+        @RenderBody()
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer bg-dark text-white pt-5 pb-3 mt-auto">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <h5 class="text-success mb-3"><i class="fas fa-seedling me-2"></i>AgriRent</h5>
+                    <p class="small text-white-50">
+                        @T("FooterTagline")
+                    </p>
+                    <div class="d-flex gap-3">
+                        <a href="#" class="text-white-50 hover-text-success"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="text-white-50 hover-text-success"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="text-white-50 hover-text-success"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="text-white-50 hover-text-success"><i class="fab fa-linkedin-in"></i></a>
+                    </div>
+                </div>
+                <div class="col-md-2 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">@T("QuickLinks")</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="/" class="text-white-50 text-decoration-none">@T("Home")</a></li>
+                        <li><a href="/Equipment" class="text-white-50 text-decoration-none">@T("RentEquipment")</a></li>
+                        <li><a href="/Products" class="text-white-50 text-decoration-none">@T("BuyProducts")</a></li>
+                        <li><a href="#contact" class="text-white-50 text-decoration-none">@T("AboutUs")</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                     <h6 class="text-uppercase fw-bold mb-3">@T("Support")</h6>
+                    <ul class="list-unstyled small">
+                        <li><a href="#" class="text-white-50 text-decoration-none">@T("HelpCenter")</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">@T("TermsOfService")</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">@T("PrivacyPolicy")</a></li>
+                        <li><a href="#" class="text-white-50 text-decoration-none">@T("ContactUs")</a></li>
+                    </ul>
+                </div>
+                <div class="col-md-3 mb-4">
+                    <h6 class="text-uppercase fw-bold mb-3">@T("Contact")</h6>
+                    <ul class="list-unstyled small text-white-50">
+                        <li class="mb-2"><i class="fas fa-map-marker-alt me-2"></i> 123 Agri Lane, Green Valley</li>
+                        <li class="mb-2"><i class="fas fa-phone me-2"></i> +91 98765 43210</li>
+                        <li class="mb-2"><i class="fas fa-envelope me-2"></i> hello@agrirent.com</li>
+                    </ul>
+                </div>
+            </div>
+            <hr class="border-secondary my-4">
+            <div class="text-center small text-white-50">
+                &copy; 2026 AgriRent. @T("AllRightsReserved")
+            </div>
+        </div>
+    </footer>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    
+    <script>
+        // Global Page Loader Script
+        const globalPageLoader = document.getElementById('globalPageLoader');
+        
+        // Show loader immediately if not already showing
+        if (globalPageLoader) document.body.classList.add('loading');
+
+        function hideLoader() {
+            if (globalPageLoader) {
+                globalPageLoader.classList.add('fade-out');
+                document.body.classList.remove('loading');
+                setTimeout(() => globalPageLoader.classList.add('hidden'), 300);
+            }
+        }
+
+        // Hide loader as soon as the DOM is interactive
+        document.addEventListener('DOMContentLoaded', hideLoader);
+
+        // Fallback: hide if DOMContentLoaded missed or for legacy reasons
+        window.addEventListener('load', hideLoader);
+
+        // HANDLE BACK BUTTON (bfcache)
+        window.addEventListener('pageshow', function(event) {
+            // event.persisted is true if the page was restored from cache (Back button)
+            if (event.persisted) {
+                 hideLoader();
+            }
+            // Global Session Sync: Keep localStorage in sync with server session
+            @if (Context.Session.GetString("UserName") != null) {
+                <text>localStorage.setItem("isLoggedIn", "true");</text>
+            } else {
+                <text>localStorage.removeItem("isLoggedIn");</text>
+            }
+        });
+
+        // Only show loader for explicit link clicks, not generic beforeunload
+        document.addEventListener('click', function(e) {
+            const link = e.target.closest('a');
+            if (link && 
+                link.href && 
+                !link.href.includes('#') && 
+                !link.target && 
+                link.origin === window.location.origin &&
+                !e.ctrlKey && !e.shiftKey && !e.metaKey) {
+                
+                if (globalPageLoader) {
+                    globalPageLoader.classList.remove('fade-out', 'hidden');
+                    document.body.classList.add('loading');
+                }
+            }
+        });
+    </script>
+    
+    <script>
+        // Language Change Script
+        function changeLanguage(lang) {
+            // Show loader before changing language
+            if (globalPageLoader) {
+                globalPageLoader.classList.remove('fade-out', 'hidden');
+                document.body.classList.add('loading');
+            }
+            
+            fetch('/Home/SetLanguage?lang=' + lang, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    location.reload();
+                }
+            })
+            .catch(error => {
+                console.error('Error changing language:', error);
+                if (globalPageLoader) {
+                    globalPageLoader.classList.add('fade-out');
+                    document.body.classList.remove('loading');
+                }
+            });
+        }
+
+        // 🔒 NAVIGATION & HISTORY GUARD
+        (function() {
+            // Function to "tap" the history stack so "Back" stays in the app
+            function maintainHistoryState() {
+                if (localStorage.getItem("isLoggedIn") === "true") {
+                    window.history.pushState(null, null, window.location.href);
+                }
+            }
+
+            // Prevent leaving via back button while logged in
+            window.addEventListener('popstate', function (event) {
+                if (localStorage.getItem("isLoggedIn") === "true") {
+                    // Intercepting back/forward and forcing state preservation
+                    window.history.pushState(null, null, window.location.href);
+                }
+            });
+
+            // Initial call if logged in
+            document.addEventListener('DOMContentLoaded', function() {
+                if (localStorage.getItem("isLoggedIn") === "true") {
+                    maintainHistoryState();
+                }
+            });
+
+            // Clear marker on explicit logout click
+            document.addEventListener('click', function(e) {
+                const logoutLink = e.target.closest('a[href="/Account/Logout"]');
+                if (logoutLink) {
+                    localStorage.removeItem("isLoggedIn");
+                }
+            });
+        })();
+    </script>
+    
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+
+</html>

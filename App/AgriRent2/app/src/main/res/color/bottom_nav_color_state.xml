@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- State when the tab is selected (Primary App Color) -->
+    <item android:color="@color/primary_color" android:state_checked="true" />
+    
+    <!-- State when the tab is NOT selected (Muted Gray) -->
+    <item android:color="#757575" /> 
+</selector>

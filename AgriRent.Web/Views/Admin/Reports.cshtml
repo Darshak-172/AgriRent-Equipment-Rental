@@ -1,0 +1,605 @@
+@{
+    ViewData["Title"] = "Reports Dashboard";
+    Layout = "_AdminLayout";
+}
+@section Styles {
+    <style>
+        .reports-container {
+            padding: 0;
+            position: relative;
+        }
+
+        .filter-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+            margin-bottom: 24px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .filter-card .form-control {
+            max-width: 200px;
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .summary-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+            text-align: center;
+            border-left: 5px solid #28a745;
+        }
+
+        .summary-card h3 {
+            margin: 0;
+            font-size: 28px;
+            font-weight: 700;
+            color: #333;
+        }
+
+        .summary-card p {
+            margin: 5px 0 0;
+            color: #666;
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .chart-card {
+            background: #fff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.04);
+        }
+
+        .chart-card h4 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+            width: 100%;
+        }
+
+        @@media(max-width: 992px) {
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        
+        .btn-export {
+            background-color: #0d6efd;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+        
+        .btn-export:hover {
+            background-color: #0b5ed7;
+            color: white;
+        }
+        
+        /* Loader styles */
+        #reportLoader {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.7);
+            z-index: 1000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            border-radius: 12px;
+            backdrop-filter: blur(2px);
+        }
+        
+        .spinner {
+            width: 50px;
+            height: 50px;
+            border: 5px solid #f3f3f3;
+            border-top: 5px solid #28a745;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @@keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+}
+
+<div class="reports-container" id="reportsContainer">
+    <!-- Loader overlay -->
+    <div id="reportLoader">
+        <div class="spinner"></div>
+    </div>
+
+    <div class="filter-card">
+        <div>
+            <label for="startDate" class="form-label mb-0" style="font-size:12px; color:#666;">Start Date</label>
+            <input type="date" id="startDate" class="form-control" />
+        </div>
+        <div>
+            <label for="endDate" class="form-label mb-0" style="font-size:12px; color:#666;">End Date</label>
+            <input type="date" id="endDate" class="form-control" />
+        </div>
+        <div style="margin-top: 18px;">
+            <button id="btnApply" class="btn btn-success px-4 rounded-3 fw-medium">Apply Filter</button>
+            <button id="btnReset" class="btn btn-light px-4 rounded-3 fw-medium ms-2 border">Reset</button>
+        </div>
+        <div class="dropdown" style="margin-top: 18px; margin-left: auto;">
+            <button class="btn-export dropdown-toggle" type="button" id="exportDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="fa-solid fa-download"></i> Export Report
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="exportDropdown">
+                <li><a class="dropdown-item" href="#" id="btnExportPdf"><i class="fa-solid fa-file-pdf text-danger me-2"></i>Export as PDF</a></li>
+                <li><a class="dropdown-item" href="#" id="btnExportExcel"><i class="fa-solid fa-file-excel text-success me-2"></i>Export as Excel</a></li>
+                <li><a class="dropdown-item" href="#" id="btnExportCsv"><i class="fa-solid fa-file-csv text-primary me-2"></i>Export as CSV</a></li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Hidden Container for PDF Export (Tables instead of Charts) -->
+    <div id="pdfExportArea" style="display: none; padding: 20px; background: white;">
+        <div style="text-align: center; margin-bottom: 30px;">
+            <img src="/images/agrirent_logo.png" alt="AgriRent Logo" style="height: 60px; margin-bottom: 15px;" />
+            <h2 style="margin:0; color:#1b5e20;">AgriRent Performance Report</h2>
+            <p id="pdfDateRange" style="color: #666; margin-top: 5px;"></p>
+            <hr style="margin-top:20px; border-top: 2px solid #eee;" />
+        </div>
+        
+        <!-- Placeholder for dynamically generated tables -->
+        <div id="pdfTablesContainer"></div>
+    </div>
+
+    <!-- Summary Metrics -->
+    <div class="summary-cards">
+        <div class="summary-card" style="border-left-color: #0d6efd;">
+            <h3 id="statRevenue">₹0</h3>
+            <p>Total Revenue</p>
+        </div>
+        <div class="summary-card" style="border-left-color: #20c997;">
+            <h3 id="statUsers">0</h3>
+            <p>Total Users</p>
+        </div>
+        <div class="summary-card" style="border-left-color: #ffc107;">
+            <h3 id="statEquipments">0</h3>
+            <p>Equipments Added</p>
+        </div>
+        <div class="summary-card" style="border-left-color: #fd7e14;">
+            <h3 id="statProducts">0</h3>
+            <p>Products Added</p>
+        </div>
+    </div>
+
+    <!-- Charts Row 1 -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h4>Revenue Over Time</h4>
+            <div class="chart-container">
+                <canvas id="revenueChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h4>Items Added Over Time</h4>
+            <div class="chart-container">
+                <canvas id="itemsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Charts Row 2 -->
+    <div class="charts-grid">
+        <div class="chart-card">
+            <h4>Subscriptions Sold</h4>
+            <div class="chart-container">
+                <canvas id="subsChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h4>Complaints by Status</h4>
+            <div class="chart-container">
+                <canvas id="complaintsChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- SheetJS for Excel formatting -->
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+
+    <!-- html2pdf for PDF generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+    <script>
+        let currentReportData = null;
+        let charts = {}; // Store chart instances
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Set default dates (Last 30 days)
+            const end = new Date();
+            const start = new Date();
+            start.setDate(end.getDate() - 30);
+            
+            document.getElementById('startDate').valueAsDate = start;
+            document.getElementById('endDate').valueAsDate = end;
+
+            loadReportData();
+
+            document.getElementById('btnApply').addEventListener('click', loadReportData);
+            document.getElementById('btnReset').addEventListener('click', () => {
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                loadReportData();
+            });
+            
+            document.getElementById('btnExportExcel').addEventListener('click', (e) => { e.preventDefault(); exportToExcel(); });
+            document.getElementById('btnExportCsv').addEventListener('click', (e) => { e.preventDefault(); exportToCsv(); });
+            document.getElementById('btnExportPdf').addEventListener('click', (e) => { e.preventDefault(); exportToPdf(); });
+        });
+
+        async function loadReportData() {
+            const start = document.getElementById('startDate').value;
+            const end = document.getElementById('endDate').value;
+            
+            // Show loader
+            document.getElementById('reportLoader').style.display = 'flex';
+            
+            try {
+                let url = '/Admin/ReportsData';
+                if (start && end) {
+                    url += `?startDate=${start}&endDate=${end}`;
+                }
+
+                const res = await fetch(url);
+                const data = await res.json();
+
+                if (data.success) {
+                    currentReportData = data;
+                    updateDashboard(data);
+                } else {
+                    alert('Error loading reports: ' + (data.message || 'Unknown error'));
+                }
+            } catch (err) {
+                console.error(err);
+                alert('Network error while loading reports.');
+            } finally {
+                // Hide loader
+                document.getElementById('reportLoader').style.display = 'none';
+            }
+        }
+
+        function updateDashboard(data) {
+            // Update Summaries
+            document.getElementById('statRevenue').innerText = '₹' + (data.summary.totalRevenue || 0).toLocaleString('en-IN');
+            document.getElementById('statUsers').innerText = (data.summary.totalUsers || 0).toLocaleString();
+            document.getElementById('statEquipments').innerText = (data.summary.totalEquipments || 0).toLocaleString();
+            document.getElementById('statProducts').innerText = (data.summary.totalProducts || 0).toLocaleString();
+
+            renderRevenueChart(data.trends);
+            renderItemsChart(data.trends);
+            renderSubsChart(data.breakdowns.subscriptions);
+            renderComplaintsChart(data.breakdowns.complaints);
+        }
+
+        // Clean up previous chart instances if they exist
+        function clearChart(id) {
+            if (charts[id]) {
+                charts[id].destroy();
+            }
+        }
+
+        function renderRevenueChart(trends) {
+            clearChart('revenueChart');
+            const dates = trends.map(t => t.date);
+            const revenues = trends.map(t => t.revenue);
+
+            const ctx = document.getElementById('revenueChart').getContext('2d');
+            charts['revenueChart'] = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: dates.length ? dates : ['No Data'],
+                    datasets: [{
+                        label: 'Revenue (₹)',
+                        data: revenues.length ? revenues : [0],
+                        borderColor: '#0d6efd',
+                        backgroundColor: 'rgba(13, 110, 253, 0.1)',
+                        borderWidth: 2,
+                        fill: true,
+                        tension: 0.3
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderItemsChart(trends) {
+            clearChart('itemsChart');
+            const dates = trends.map(t => t.date);
+            const eqs = trends.map(t => t.equipments);
+            const prods = trends.map(t => t.products);
+
+            const ctx = document.getElementById('itemsChart').getContext('2d');
+            charts['itemsChart'] = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: dates.length ? dates : ['No Data'],
+                    datasets: [
+                        {
+                            label: 'Equipments',
+                            data: eqs.length ? eqs : [0],
+                            backgroundColor: '#ffc107'
+                        },
+                        {
+                            label: 'Products',
+                            data: prods.length ? prods : [0],
+                            backgroundColor: '#fd7e14'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    scales: { y: { beginAtZero: true } }
+                }
+            });
+        }
+
+        function renderSubsChart(subs) {
+            clearChart('subsChart');
+            const labels = Object.keys(subs);
+            const values = Object.values(subs);
+
+            const ctx = document.getElementById('subsChart').getContext('2d');
+            charts['subsChart'] = new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: labels.length ? labels : ['No Data'],
+                    datasets: [{
+                        data: values.length ? values : [1],
+                        backgroundColor: ['#20c997', '#0d6efd', '#ffc107', '#fd7e14', '#6c757d'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function renderComplaintsChart(complaints) {
+            clearChart('complaintsChart');
+            const labels = Object.keys(complaints);
+            const values = Object.values(complaints);
+
+            const ctx = document.getElementById('complaintsChart').getContext('2d');
+            charts['complaintsChart'] = new Chart(ctx, {
+                type: 'pie',
+                data: {
+                    labels: labels.length ? labels : ['No Data'],
+                    datasets: [{
+                        data: values.length ? values : [1],
+                        backgroundColor: ['#dc3545', '#ffc107', '#28a745', '#17a2b8'],
+                        borderWidth: 0
+                    }]
+                },
+                options: { responsive: true, maintainAspectRatio: false }
+            });
+        }
+
+        function exportToExcel() {
+            if (!currentReportData) {
+                alert("No data to export!");
+                return;
+            }
+
+            const wb = XLSX.utils.book_new();
+
+            const summaryData = [
+                ["AgriRent Performance Report", ""],
+                ["Date Extracted", new Date().toLocaleString()],
+                ["", ""],
+                ["Metric", "Value"],
+                ["Total Revenue", currentReportData.summary.totalRevenue],
+                ["Total Users", currentReportData.summary.totalUsers],
+                ["Equipments Added", currentReportData.summary.totalEquipments],
+                ["Products Added", currentReportData.summary.totalProducts],
+            ];
+            const wsSummary = XLSX.utils.aoa_to_sheet(summaryData);
+            XLSX.utils.book_append_sheet(wb, wsSummary, "Summary");
+
+            if (currentReportData.trends && currentReportData.trends.length > 0) {
+                const trendsMapped = currentReportData.trends.map(t => ({
+                    "Date": t.date,
+                    "Revenue (₹)": t.revenue,
+                    "Equipments Added": t.equipments,
+                    "Products Added": t.products
+                }));
+                const wsTrends = XLSX.utils.json_to_sheet(trendsMapped);
+                XLSX.utils.book_append_sheet(wb, wsTrends, "Daily Trends");
+            }
+
+            if (Object.keys(currentReportData.breakdowns.subscriptions).length > 0) {
+                const subsMapped = Object.keys(currentReportData.breakdowns.subscriptions).map(key => ({
+                    "Plan Name": key,
+                    "Subscriptions Sold": currentReportData.breakdowns.subscriptions[key]
+                }));
+                const wsSubs = XLSX.utils.json_to_sheet(subsMapped);
+                XLSX.utils.book_append_sheet(wb, wsSubs, "Subscriptions Breakdown");
+            }
+
+            if (Object.keys(currentReportData.breakdowns.complaints).length > 0) {
+                const complaintsMapped = Object.keys(currentReportData.breakdowns.complaints).map(key => ({
+                    "Status": key,
+                    "Count": currentReportData.breakdowns.complaints[key]
+                }));
+                const wsComplaints = XLSX.utils.json_to_sheet(complaintsMapped);
+                XLSX.utils.book_append_sheet(wb, wsComplaints, "Complaints Breakdown");
+            }
+
+            const s = document.getElementById('startDate').value || 'AllTime';
+            const e = document.getElementById('endDate').value || 'Now';
+            XLSX.writeFile(wb, `AgriRent_Report_${s}_to_${e}.xlsx`);
+        }
+
+        function exportToCsv() {
+             if (!currentReportData) {
+                alert("No data to export!");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,\uFEFF";
+            csvContent += "AgriRent Performance Report\r\n\r\n";
+
+            csvContent += "--- SUMMARY ---\r\n";
+            csvContent += `Total Revenue (INR), ${currentReportData.summary.totalRevenue}\r\n`;
+            csvContent += `Total Users, ${currentReportData.summary.totalUsers}\r\n`;
+            csvContent += `Equipments Added, ${currentReportData.summary.totalEquipments}\r\n`;
+            csvContent += `Products Added, ${currentReportData.summary.totalProducts}\r\n\r\n`;
+
+            if (currentReportData.trends && currentReportData.trends.length > 0) {
+                csvContent += "--- DAILY TRENDS ---\r\n";
+                csvContent += "Date,Revenue,Equipments Added,Products Added\r\n";
+                currentReportData.trends.forEach(t => {
+                    csvContent += `${t.date},${t.revenue},${t.equipments},${t.products}\r\n`;
+                });
+            }
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            const s = document.getElementById('startDate').value || 'AllTime';
+            const e = document.getElementById('endDate').value || 'Now';
+            link.setAttribute("download", `AgriRent_Report_${s}_to_${e}.csv`);
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function exportToPdf() {
+            if (!currentReportData) {
+                alert("No data to export!");
+                return;
+            }
+
+            const s = document.getElementById('startDate').value || 'All Time';
+            const e = document.getElementById('endDate').value || 'Present';
+            document.getElementById('pdfDateRange').innerText = `Date Range: ${s} to ${e}`;
+            
+            // 1. Generate Tables HTML
+            let tablesHtml = `
+                <h4 style="margin-bottom:15px; color:#333;">1. Performance Summary</h4>
+                <table class="table table-bordered mb-4" style="font-size: 14px;">
+                    <thead class="table-light"><tr><th>Metric</th><th>Value</th></tr></thead>
+                    <tbody>
+                        <tr><td>Total Revenue</td><td>₹${currentReportData.summary.totalRevenue}</td></tr>
+                        <tr><td>Total Users</td><td>${currentReportData.summary.totalUsers}</td></tr>
+                        <tr><td>Equipments Added</td><td>${currentReportData.summary.totalEquipments}</td></tr>
+                        <tr><td>Products Added</td><td>${currentReportData.summary.totalProducts}</td></tr>
+                    </tbody>
+                </table>
+            `;
+
+            if (currentReportData.trends && currentReportData.trends.length > 0) {
+                tablesHtml += `
+                    <h4 style="margin-bottom:15px; color:#333;">2. Daily Trends</h4>
+                    <table class="table table-bordered mb-4" style="font-size: 14px;">
+                        <thead class="table-light"><tr><th>Date</th><th>Revenue (₹)</th><th>Equipments Added</th><th>Products Added</th></tr></thead>
+                        <tbody>
+                `;
+                currentReportData.trends.forEach(t => {
+                    tablesHtml += `<tr><td>${t.date}</td><td>₹${t.revenue}</td><td>${t.equipments}</td><td>${t.products}</td></tr>`;
+                });
+                tablesHtml += `</tbody></table>`;
+            }
+
+            if (Object.keys(currentReportData.breakdowns.subscriptions).length > 0) {
+                tablesHtml += `
+                    <h4 style="margin-bottom:15px; color:#333;">3. Subscriptions Breakdown</h4>
+                    <table class="table table-bordered mb-4" style="font-size: 14px;">
+                        <thead class="table-light"><tr><th>Plan Name</th><th>Subscriptions Sold</th></tr></thead>
+                        <tbody>
+                `;
+                for (const [key, val] of Object.entries(currentReportData.breakdowns.subscriptions)) {
+                    tablesHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
+                }
+                tablesHtml += `</tbody></table>`;
+            }
+
+            if (Object.keys(currentReportData.breakdowns.complaints).length > 0) {
+                tablesHtml += `
+                    <h4 style="margin-bottom:15px; color:#333;">4. Complaints Breakdown</h4>
+                    <table class="table table-bordered" style="font-size: 14px;">
+                        <thead class="table-light"><tr><th>Task Status</th><th>Count</th></tr></thead>
+                        <tbody>
+                `;
+                for (const [key, val] of Object.entries(currentReportData.breakdowns.complaints)) {
+                    tablesHtml += `<tr><td>${key}</td><td>${val}</td></tr>`;
+                }
+                tablesHtml += `</tbody></table>`;
+            }
+
+            // Inject tables
+            document.getElementById('pdfTablesContainer').innerHTML = tablesHtml;
+
+            // 2. Setup capturing logic
+            const pdfExportArea = document.getElementById('pdfExportArea');
+            const reportsContainer = document.getElementById('reportsContainer');
+            
+            // Toggle visibility for PDF
+            pdfExportArea.style.display = 'block';
+            reportsContainer.style.display = 'none'; // Hide the dashboard
+            
+            const opt = {
+                margin:       10,
+                filename:     `AgriRent_Report_${s}_to_${e}.pdf`,
+                image:        { type: 'jpeg', quality: 0.98 },
+                html2canvas:  { scale: 2, useCORS: true },
+                jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+
+            // Generate
+            html2pdf().from(pdfExportArea).set(opt).save().then(() => {
+                // Restore visibility
+                pdfExportArea.style.display = 'none';
+                reportsContainer.style.display = 'block';
+            });
+        }
+    </script>
+}

@@ -1,0 +1,427 @@
+@model List<AgriRent.Models.SubscriptionPlan>
+
+@{
+    ViewData["Title"] = "Subscription Plans";
+    Layout = "_AdminLayout";
+}
+
+@section Styles {
+    <style>
+        /* ── ALERTS ── */
+        .admin-alert {
+            padding: 16px 24px; border-radius: 12px; margin-bottom: 24px; display: flex; align-items: center; gap: 12px; font-weight: 600; box-shadow: var(--shadow-soft); animation: slideDown 0.4s ease-out;
+            background: var(--bg-white); border: 1px solid rgba(0,0,0,0.05); color: var(--text-primary);
+        }
+        .admin-alert-success i { color: var(--farm-leaf); font-size: 1.25rem; }
+        .admin-alert-error i { color: var(--farm-alert); font-size: 1.25rem; }
+        @@keyframes slideDown { from { opacity: 0; transform: translateY(-10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* ── CREATIVE ACTION BUTTON ── */
+        .btn-create-plan {
+            background: linear-gradient(135deg, var(--brand-dark) 0%, var(--brand-light) 100%);
+            color: white;
+            padding: 12px 24px;
+            border-radius: var(--radius-pill);
+            font-weight: 600;
+            font-size: 0.95rem;
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: 0 4px 15px rgba(18, 55, 42, 0.2);
+            margin-bottom: 2rem;
+        }
+        .btn-create-plan:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(18, 55, 42, 0.3);
+            color: var(--brand-accent);
+        }
+
+        /* ── 3-COLUMN PLANS GRID ── */
+        .plans-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr); /* Enforces 3 items per row maximum */
+            gap: 1.5rem; 
+            padding-bottom: 2rem;
+        }
+        @@media (max-width: 1200px) {
+            .plans-grid { grid-template-columns: repeat(2, 1fr); }
+        }
+        @@media (max-width: 768px) {
+            .plans-grid { grid-template-columns: 1fr; }
+        }
+
+        /* PREMIUM PLAN CARDS (Matching Admin Theme) */
+        .plan-card {
+            background: #f4f8c9; /* Distinct pale lime related to #d3e058 */
+            border-radius: var(--radius-xl);
+            padding: 2rem 1.5rem;
+            position: relative;
+            z-index: 1;
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            border: 1px solid #d3e058;
+            box-shadow: 0 4px 15px rgba(211, 224, 88, 0.2);
+            display: flex; flex-direction: column;
+            animation: cardEntrance 0.5s ease-out backwards;
+            overflow: hidden;
+        }
+        
+        .plan-card:hover { 
+            transform: translateY(-12px) scale(1.02); 
+            box-shadow: 0 20px 40px rgba(211, 224, 88, 0.5); 
+            border-color: #c5d446;
+            background: #e9f291; /* Stronger #d3e058 tint on hover */
+        }
+
+        /* Decorative top accent using brand accent */
+        .plan-card::after {
+            content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+            background: linear-gradient(90deg, #d3e058, var(--brand-accent));
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        .plan-card:hover::after { opacity: 1; }
+        .plan-card.inactive::after { background: var(--farm-alert); }
+        .plan-card.inactive { opacity: 0.8; }
+        .plan-card.inactive:hover { opacity: 1; }
+
+        /* Floating Status Badge */
+        .plan-status {
+            position: absolute; top: 16px; right: 16px;
+            padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.7rem;
+            text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 4px;
+        }
+        .plan-status.active { background: var(--pastel-green); color: var(--brand-dark); }
+        .plan-status.inactive { background: #ffebee; color: var(--farm-alert); }
+
+        .plan-icon-wrapper {
+            width: 65px; height: 65px; border-radius: var(--radius-md);
+            background: #f3f7ca; /* Light #d3e058 tint */
+            color: #b5c43d; /* Darker #d3e058 text */
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem; margin-bottom: 1.25rem;
+            transition: transform 0.4s ease, background 0.4s ease, color 0.4s ease;
+        }
+        
+        .plan-card:hover .plan-icon-wrapper {
+            transform: scale(1.1) rotate(5deg);
+            background: #d3e058;
+            color: var(--brand-dark);
+        }
+
+        .plan-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+        
+        .plan-price-block { margin: 1rem 0 1.5rem; display: flex; align-items: baseline; }
+        .plan-currency { font-size: 1.1rem; font-weight: 600; color: var(--text-secondary); margin-right: 4px; }
+        .plan-price { font-size: 2.5rem; font-weight: 800; color: var(--brand-dark); line-height: 1; letter-spacing: -1px; }
+        .plan-duration { font-size: 0.9rem; font-weight: 500; color: var(--text-secondary); margin-left: 6px; }
+
+        /* Features */
+        .plan-features { list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1; }
+        .plan-features li {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 10px 0; border-bottom: 1px dashed rgba(0,0,0,0.05); color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;
+        }
+        .plan-features li:last-child { border-bottom: none; }
+        .plan-features li .f-label { display: flex; align-items: center; gap: 8px; }
+        .plan-features li .f-icon { color: #b5c43d; transition: color 0.3s; }
+        .plan-card:hover .plan-features li .f-icon { color: #d3e058; }
+        .plan-features li .f-value { background: var(--bg-page); padding: 4px 10px; border-radius: var(--radius-pill); font-weight: 700; color: var(--brand-dark); font-size: 0.85rem; transition: background 0.3s;}
+        .plan-card:hover .plan-features li .f-value { background: #f3f7ca; }
+
+        /* Actions */
+        .plan-actions { display: flex; gap: 10px; margin-top: auto; }
+        .btn-edit-plan {
+            flex: 1; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05); color: var(--brand-dark);
+            padding: 10px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.9rem; display: flex; justify-content: center; align-items: center; gap: 6px;
+            transition: all 0.3s ease; cursor: pointer;
+        }
+        .btn-edit-plan:hover { background: #d3e058; color: var(--brand-dark); border-color: #d3e058; transform: translateY(-2px); font-weight: 700;}
+
+        .btn-toggle {
+            width: 44px; height: 44px; border-radius: var(--radius-md); border: none; display: flex; align-items: center; justify-content: center;
+            font-size: 1.1rem; cursor: pointer; transition: var(--transition);
+        }
+        .btn-toggle.to-inactive { background: #ffebee; color: var(--farm-alert); }
+        .btn-toggle.to-inactive:hover { background: var(--farm-alert); color: white; }
+        .btn-toggle.to-active { background: var(--pastel-green); color: var(--brand-dark); }
+        .btn-toggle.to-active:hover { background: var(--brand-dark); color: white; }
+
+        /* ── ADMIN THEME MODALS ── */
+        .admin-modal .modal-content {
+            border: none; border-radius: var(--radius-xl); box-shadow: 0 20px 40px rgba(0,0,0,0.1); overflow: hidden; background: var(--bg-white);
+        }
+        .admin-modal .modal-header {
+            background: var(--bg-page); color: var(--text-primary);
+            padding: 1.5rem 2rem; border-bottom: 1px solid rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center;
+        }
+        .admin-modal .modal-title { font-weight: 700; font-size: 1.25rem; margin:0; }
+        .admin-modal .btn-close { opacity: 0.5; transition: 0.2s; background: none; border: none; font-size: 1.2rem; cursor:pointer;}
+        .admin-modal .btn-close:hover { opacity: 1; color: var(--farm-alert);}
+        
+        .admin-modal .modal-body { padding: 2rem; }
+        
+        /* Modal Inputs */
+        .admin-input-group { margin-bottom: 1.25rem; }
+        .admin-input-group label { display: block; font-weight: 600; color: var(--text-secondary); margin-bottom: 6px; font-size: 0.9rem; }
+        .admin-input-group .form-control {
+            border: 2px solid rgba(0,0,0,0.05); border-radius: var(--radius-md); padding: 12px 16px;
+            font-size: 0.95rem; font-weight: 500; color: var(--text-primary); background: var(--bg-page); transition: var(--transition); width: 100%; box-sizing: border-box;
+        }
+        .admin-input-group .form-control:focus { border-color: var(--brand-light); background: white; outline: none; }
+
+        .admin-modal .modal-footer {
+            padding: 1.25rem 2rem; background: var(--bg-page); border-top: 1px solid rgba(0,0,0,0.05); display: flex; gap: 12px; justify-content: flex-end;
+        }
+        .btn-modal-cancel {
+            background: transparent; color: var(--text-secondary); font-weight: 600; border: none; padding: 10px 20px; border-radius: var(--radius-md); transition: 0.2s; cursor: pointer;
+        }
+        .btn-modal-cancel:hover { background: rgba(0,0,0,0.05); color: var(--text-primary); }
+        
+        .btn-modal-save {
+            background: var(--brand-dark); color: white; border: none; padding: 10px 24px;
+            border-radius: var(--radius-md); font-weight: 600; font-size: 0.95rem; transition: var(--transition);
+            display: flex; align-items: center; gap: 8px; cursor: pointer;
+        }
+        .btn-modal-save:hover { background: var(--brand-light); color: var(--bg-white); }
+
+        /* Empty State */
+        .empty-creative {
+            text-align: center; padding: 4rem 2rem; background: var(--bg-white); border-radius: var(--radius-xl);
+            border: 2px dashed rgba(0,0,0,0.1); display:flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+        
+    </style>
+}
+
+<div>
+    <!-- Success/Error Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="admin-alert admin-alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="admin-alert admin-alert-error"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+    }
+
+    <!-- Header row -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="filter-bar" style="margin-bottom:0;">
+            <a href="/Admin/Subscriptions?status=All"
+               class="filter-btn @(ViewBag.SelectedStatus == "All" ? "active" : "")">
+                <i class="fa-solid fa-list"></i> All
+            </a>
+            <a href="/Admin/Subscriptions?status=Active"
+               class="filter-btn @(ViewBag.SelectedStatus == "Active" ? "active" : "")">
+                <i class="fa-regular fa-circle-check"></i> Active
+            </a>
+            <a href="/Admin/Subscriptions?status=Inactive"
+               class="filter-btn @(ViewBag.SelectedStatus == "Inactive" ? "active" : "")">
+                <i class="fa-regular fa-circle-xmark"></i> Inactive
+            </a>
+            <a href="/Admin/SubscriptionUsers?status=All" class="filter-btn">
+                <i class="fas fa-users"></i> Users Purchased
+            </a>
+        </div>
+
+        <!-- Create Button -->
+        <button class="btn-create-plan" style="margin-bottom:0;" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+            <i class="fas fa-plus"></i> Create New Plan
+        </button>
+    </div>
+
+    <!-- ══ PLANS GRID ══ -->
+    <div class="plans-grid">
+        @if (Model != null && Model.Any())
+        {
+            foreach (var plan in Model.OrderByDescending(p => p.Price))
+            {
+                <div class="plan-card @(plan.Status != "Active" ? "inactive" : "")">
+                    
+                    <div class="plan-status @(plan.Status == "Active" ? "active" : "inactive")">
+                        @if(plan.Status == "Active") { <i class="fas fa-circle" style="font-size:0.5rem"></i> }
+                        else { <i class="fas fa-minus-circle"></i> }
+                        @plan.Status
+                    </div>
+
+                    <div class="plan-icon-wrapper">
+                        @if(plan.Price == 0) { <i class="fas fa-seedling"></i> }
+                        else if(plan.Price > 500) { <i class="fas fa-gem"></i> }
+                        else { <i class="fas fa-star"></i> }
+                    </div>
+
+                    <h3 class="plan-title">@plan.PlanName</h3>
+                    
+                    <div class="plan-price-block">
+                        <span class="plan-currency">₹</span>
+                        <span class="plan-price">@plan.Price.ToString("0.##")</span>
+                        <span class="plan-duration">/ @plan.DurationDays Days</span>
+                    </div>
+
+                    <ul class="plan-features">
+                        <li>
+                            <div class="f-label"><i class="fas fa-tractor f-icon"></i> Max Equipment</div>
+                            <span class="f-value">@plan.MaxEquipment</span>
+                        </li>
+                        <li>
+                            <div class="f-label"><i class="fas fa-box-open f-icon"></i> Max Products</div>
+                            <span class="f-value">@plan.MaxProducts</span>
+                        </li>
+                    </ul>
+
+                    <div class="plan-actions">
+                        <button type="button" class="btn-edit-plan" 
+                                onclick="openEditModal(@plan.PlanId, '@Uri.EscapeDataString(plan.PlanName)', @plan.Price.ToString("0.##"), @plan.DurationDays, @plan.MaxEquipment, @plan.MaxProducts)">
+                            <i class="fas fa-pen"></i> Edit
+                        </button>
+
+                        <form asp-action="TogglePlanStatus" asp-route-id="@plan.PlanId" method="post" style="margin:0;">
+                            @if (plan.Status == "Active")
+                            {
+                                <button type="submit" class="btn-toggle to-inactive" title="Deactivate Plan">
+                                    <i class="fas fa-power-off"></i>
+                                </button>
+                            }
+                            else
+                            {
+                                <button type="submit" class="btn-toggle to-active" title="Activate Plan">
+                                    <i class="fas fa-play"></i>
+                                </button>
+                            }
+                        </form>
+                    </div>
+                </div>
+            }
+        }
+        else
+        {
+            <div style="grid-column: 1 / -1;">
+                <div class="empty-creative">
+                    <i class="fas fa-star" style="font-size:3rem; color:var(--brand-light); margin-bottom:1rem;"></i>
+                    <h3 style="font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">No Plans Configured</h3>
+                    <p style="color:var(--text-secondary); margin-bottom:1.5rem;">Create a subscription tier to allow sellers to list their items.</p>
+                    <button class="btn-create-plan m-0" data-bs-toggle="modal" data-bs-target="#addPlanModal">
+                        <i class="fas fa-plus"></i> Create Plan
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<!-- ══ ADD PLAN MODAL ══ -->
+<div class="modal fade admin-modal" id="addPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Create Subscription Plan</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form asp-action="AddPlan" method="post">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 admin-input-group">
+                            <label>Plan Name</label>
+                            <input type="text" name="PlanName" class="form-control" placeholder="e.g. Basic Plan" required maxlength="100">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Price (₹)</label>
+                            <input type="number" name="Price" class="form-control" placeholder="0.00" required min="0" step="0.01">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Duration (Days)</label>
+                            <input type="number" name="DurationDays" class="form-control" placeholder="30" required min="1">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Max Equipment</label>
+                            <input type="number" name="MaxEquipment" class="form-control" placeholder="0" required min="0" value="0">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Max Products</label>
+                            <input type="number" name="MaxProducts" class="form-control" placeholder="0" required min="0" value="0">
+                        </div>
+                    </div>
+                    <input type="hidden" name="Status" value="Active" />
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modal-save" onclick="this.innerHTML='Saving...';"><i class="fas fa-check"></i> Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- ══ EDIT PLAN MODAL ══ -->
+<div class="modal fade admin-modal" id="editPlanModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h4 class="modal-title">Edit Plan</h4>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"><i class="fas fa-times"></i></button>
+            </div>
+            
+            <form asp-action="EditPlan" method="post">
+                <input type="hidden" id="editPlanId" name="PlanId" />
+                
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-12 admin-input-group">
+                            <label>Plan Name</label>
+                            <input type="text" id="editPlanName" name="PlanName" class="form-control" required maxlength="100">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Price (₹)</label>
+                            <input type="number" id="editPrice" name="Price" class="form-control" required min="0" step="0.01">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Duration (Days)</label>
+                            <input type="number" id="editDuration" name="DurationDays" class="form-control" required min="1">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Max Equipment</label>
+                            <input type="number" id="editEquipment" name="MaxEquipment" class="form-control" required min="0">
+                        </div>
+
+                        <div class="col-md-6 admin-input-group">
+                            <label>Max Products</label>
+                            <input type="number" id="editProducts" name="MaxProducts" class="form-control" required min="0">
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn-modal-cancel" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn-modal-save" onclick="this.innerHTML='Saving...';"><i class="fas fa-save"></i> Save Changes</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    function openEditModal(id, name, price, duration, equipment, products) {
+        document.getElementById('editPlanId').value = id;
+        document.getElementById('editPlanName').value = decodeURIComponent(name);
+        document.getElementById('editPrice').value = price;
+        document.getElementById('editDuration').value = duration;
+        document.getElementById('editEquipment').value = equipment;
+        document.getElementById('editProducts').value = products;
+        
+        var editModal = new bootstrap.Modal(document.getElementById('editPlanModal'));
+        editModal.show();
+    }
+</script>
+}

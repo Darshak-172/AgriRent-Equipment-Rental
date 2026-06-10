@@ -1,0 +1,684 @@
+@model AgriRent.ViewModels.SubscriptionUsersPageViewModel
+
+@{
+    ViewData["Title"] = "Users Purchased Plans";
+    Layout = "_AdminLayout";
+
+    var grouped = Model.Subscriptions
+        .GroupBy(s => new { s.PlanId, s.PlanName })
+        .OrderBy(g => g.Key.PlanName)
+        .ToList();
+
+    // Group subscriptions by user (for per-user detail modals)
+    var byUser = Model.Subscriptions
+        .GroupBy(s => s.UserId)
+        .ToDictionary(g => g.Key, g => g.OrderBy(s => s.SubscriptionId).ToList());
+
+    // Group payments by user
+    var paymentsByUser = Model.Payments
+        .GroupBy(p => p.UserId)
+        .ToDictionary(g => g.Key, g => g.OrderByDescending(p => p.PaymentDate).ToList());
+}
+
+@section Styles {
+<style>
+    /* ── PLANS GRID ── */
+    .plans-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
+        padding-bottom: 2rem;
+    }
+    @@media (max-width: 1200px) { .plans-grid { grid-template-columns: repeat(2, 1fr); } }
+    @@media (max-width: 768px)  { .plans-grid { grid-template-columns: 1fr; } }
+
+    /* ── PLAN CARD ── */
+    .plan-card {
+        background: #f4f8c9;
+        border-radius: var(--radius-xl);
+        padding: 2rem 1.5rem;
+        position: relative;
+        z-index: 1;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        border: 1px solid #d3e058;
+        box-shadow: 0 4px 15px rgba(211, 224, 88, 0.2);
+        display: flex; flex-direction: column;
+        overflow: hidden;
+        animation: cardEntrance 0.5s ease-out backwards;
+    }
+    .plan-card:hover {
+        transform: translateY(-8px) scale(1.02);
+        box-shadow: 0 20px 40px rgba(211, 224, 88, 0.5);
+        border-color: #c5d446;
+        background: #e9f291;
+    }
+    .plan-card::after {
+        content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 6px;
+        background: linear-gradient(90deg, #d3e058, var(--brand-accent));
+        opacity: 0.8; transition: opacity 0.3s;
+    }
+    .plan-card:hover::after { opacity: 1; }
+    .plan-card.active-card::after { background: linear-gradient(90deg, #d3e058, #a8c200); }
+    .plan-card.no-active::after  { background: linear-gradient(90deg, #ffb3b3, #ff6b6b); }
+
+    @@keyframes cardEntrance {
+        from { opacity: 0; transform: translateY(20px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* ── STATUS BADGE ── */
+    .plan-status {
+        position: absolute; top: 16px; right: 16px;
+        padding: 4px 12px; border-radius: var(--radius-pill); font-weight: 700; font-size: 0.7rem;
+        text-transform: uppercase; letter-spacing: 1px; display: inline-flex; align-items: center; gap: 4px;
+    }
+    .plan-status.has-active  { background: var(--pastel-green); color: var(--brand-dark); }
+    .plan-status.all-expired { background: #ffebee; color: var(--farm-alert); }
+
+    /* ── ICON WRAPPER ── */
+    .plan-icon-wrapper {
+        width: 65px; height: 65px; border-radius: var(--radius-md);
+        background: #f3f7ca; color: #b5c43d;
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.6rem; margin-bottom: 1.25rem;
+        transition: transform 0.4s ease, background 0.4s ease, color 0.4s ease;
+    }
+    .plan-card:hover .plan-icon-wrapper {
+        transform: scale(1.1) rotate(5deg);
+        background: #d3e058; color: var(--brand-dark);
+    }
+
+    .plan-title { font-size: 1.25rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.25rem; }
+
+    /* ── SUBSCRIBER COUNT BLOCK ── */
+    .sub-count-block {
+        margin: 0.75rem 0 1.25rem;
+        display: flex; align-items: baseline; gap: 8px;
+    }
+    .sub-count {
+        font-size: 3rem; font-weight: 800; color: var(--brand-dark);
+        line-height: 1; letter-spacing: -2px;
+    }
+    .sub-count-label {
+        font-size: 0.9rem; font-weight: 600; color: var(--text-secondary);
+    }
+
+    /* ── FEATURES LIST ── */
+    .plan-features { list-style: none; padding: 0; margin: 0 0 1.5rem; flex-grow: 1; }
+    .plan-features li {
+        display: flex; align-items: center; justify-content: space-between;
+        padding: 8px 0; border-bottom: 1px dashed rgba(0,0,0,0.05);
+        color: var(--text-secondary); font-weight: 500; font-size: 0.9rem;
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li .f-label { display: flex; align-items: center; gap: 8px; }
+    .plan-features li .f-icon { color: #b5c43d; transition: color 0.3s; }
+    .plan-card:hover .plan-features li .f-icon { color: #d3e058; }
+    .plan-features li .f-value {
+        background: var(--bg-page); padding: 4px 10px; border-radius: var(--radius-pill);
+        font-weight: 700; color: var(--brand-dark); font-size: 0.85rem; transition: background 0.3s;
+    }
+    .plan-card:hover .plan-features li .f-value { background: #f3f7ca; }
+
+    /* ── ACTIONS ── */
+    .plan-actions { display: flex; gap: 10px; margin-top: auto; }
+    .btn-details {
+        flex: 1; background: var(--bg-page); border: 1px solid rgba(0,0,0,0.05); color: var(--brand-dark);
+        padding: 10px; border-radius: var(--radius-md); font-weight: 600; font-size: 0.9rem;
+        display: flex; justify-content: center; align-items: center; gap: 6px;
+        transition: all 0.3s ease; cursor: pointer;
+    }
+    .btn-details:hover  { background: #d3e058; color: var(--brand-dark); border-color: #d3e058; transform: translateY(-2px); }
+    .btn-details.active { background: var(--brand-dark); color: white; border-color: var(--brand-dark); }
+
+    /* ── DETAILS PANEL ── */
+    .details-panel {
+        background: var(--bg-white);
+        border: 1px solid #d3e058;
+        border-radius: var(--radius-xl);
+        padding: 1.5rem 2rem;
+        margin-bottom: 2rem;
+        animation: slideDown 0.35s ease-out;
+        box-shadow: 0 4px 20px rgba(211, 224, 88, 0.25);
+    }
+    @@keyframes slideDown {
+        from { opacity: 0; transform: translateY(-10px); }
+        to   { opacity: 1; transform: translateY(0); }
+    }
+    .details-header {
+        display: flex; align-items: center; justify-content: space-between;
+        margin-bottom: 1.25rem; padding-bottom: 1rem;
+        border-bottom: 2px dashed rgba(211, 224, 88, 0.6);
+    }
+    .details-title { font-size: 1.1rem; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+    .btn-close-panel {
+        background: #ffebee; border: none; color: var(--farm-alert); width: 34px; height: 34px;
+        border-radius: 50%; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: 0.2s; font-size: 0.9rem;
+    }
+    .btn-close-panel:hover { background: var(--farm-alert); color: white; }
+
+    .details-table th { font-weight: 700; color: var(--text-secondary); font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.5px; }
+    .details-table td { vertical-align: middle; }
+
+    /* ── USER DETAILS BUTTON ── */
+    .btn-user-detail {
+        background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8;
+        padding: 4px 12px; border-radius: 8px; font-size: 12px; font-weight: 600;
+        cursor: pointer; display: inline-flex; align-items: center; gap: 5px;
+        transition: all 0.2s ease; white-space: nowrap;
+    }
+    .btn-user-detail:hover { background: #1d4ed8; color: #fff; border-color: #1d4ed8; transform: translateY(-1px); }
+
+    /* ── USER DETAIL MODAL ── */
+    .user-modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(15, 23, 42, 0.55);
+        z-index: 1060;
+        display: flex; align-items: center; justify-content: center;
+        padding: 1rem;
+    }
+    .user-modal-box {
+        background: #fff;
+        border-radius: 20px;
+        width: 100%; max-width: 920px;
+        max-height: 88vh;
+        display: flex; flex-direction: column;
+        box-shadow: 0 25px 70px rgba(0,0,0,0.35);
+        animation: modalPop 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        overflow: hidden;
+    }
+    @@keyframes modalPop {
+        from { opacity: 0; transform: scale(0.92) translateY(10px); }
+        to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .user-modal-header {
+        padding: 1.5rem 2rem;
+        background: linear-gradient(135deg, #f4f8c9 0%, #e9f291 100%);
+        border-bottom: 2px solid #d3e058;
+        display: flex; justify-content: space-between; align-items: center; gap: 1rem;
+        flex-shrink: 0;
+    }
+    .user-modal-avatar {
+        width: 48px; height: 48px; border-radius: 12px;
+        background: #d3e058; color: var(--brand-dark);
+        display: flex; align-items: center; justify-content: center;
+        font-size: 1.3rem; font-weight: 800; flex-shrink: 0;
+    }
+    .user-modal-name   { font-size: 1.15rem; font-weight: 800; color: var(--brand-dark); margin: 0; }
+    .user-modal-mobile { font-size: 0.85rem; color: var(--text-secondary); font-weight: 500; margin-top: 2px; }
+    .user-modal-body   { padding: 1.75rem 2rem; overflow-y: auto; flex: 1; }
+    .modal-section-title {
+        font-size: 0.78rem; font-weight: 800; text-transform: uppercase;
+        letter-spacing: 1px; color: var(--text-secondary);
+        margin-bottom: 1rem;
+        display: flex; align-items: center; gap: 8px;
+    }
+    .modal-section-title::after { content: ''; flex: 1; height: 1px; background: rgba(0,0,0,0.08); }
+
+    .amount-chip {
+        font-weight: 800; color: #166534;
+        background: #dcfce7; padding: 3px 10px;
+        border-radius: 999px; font-size: 13px; display: inline-block;
+    }
+    .method-chip {
+        background: #f1f5f9; color: #475569;
+        padding: 3px 10px; border-radius: 999px;
+        font-size: 11px; font-weight: 600;
+    }
+    .razorpay-id {
+        font-family: 'Courier New', monospace;
+        font-size: 11px; color: #64748b;
+        background: #f8fafc; padding: 3px 8px; border-radius: 6px;
+        display: inline-block; max-width: 170px; overflow: hidden;
+        text-overflow: ellipsis; white-space: nowrap;
+        cursor: help;
+    }
+    .no-payments-note {
+        text-align: center; padding: 2rem;
+        color: var(--text-secondary); font-size: 0.9rem;
+        background: #f8fafc; border-radius: 12px;
+    }
+
+    /* ── EMPTY STATE ── */
+    .empty-creative {
+        text-align: center; padding: 4rem 2rem; background: var(--bg-white); border-radius: var(--radius-xl);
+        border: 2px dashed rgba(0,0,0,0.1); display: flex; flex-direction: column; align-items: center; justify-content: center;
+    }
+
+    /* ── SUMMARY BAR ── */
+    .summary-bar {
+        display: flex; align-items: center; gap: 12px; padding: 12px 20px;
+        background: var(--bg-white); border-radius: var(--radius-md); margin-bottom: 1.5rem;
+        border: 1px solid rgba(0,0,0,0.05); box-shadow: var(--shadow-soft);
+        font-size: 0.9rem; color: var(--text-secondary); font-weight: 500;
+    }
+    .summary-bar strong { color: var(--brand-dark); font-weight: 800; font-size: 1rem; }
+
+    /* ── BACK BUTTON ── */
+    .btn-back-plans {
+        text-decoration: none; color: var(--brand-dark, #12372A); font-weight: 700; font-size: 0.95rem; display: inline-flex; align-items: center; gap: 8px; transition: all 0.2s ease; padding: 6px 14px; background: #ffffff; border-radius: 50px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); border: 1px solid rgba(0,0,0,0.05);
+    }
+    .btn-back-plans:hover {
+        transform: translateY(-2px); box-shadow: 0 4px 15px rgba(211, 224, 88, 0.4); border-color: #d3e058; color: var(--brand-dark);
+    }
+</style>
+}
+
+<div>
+
+    <!-- BACK NAVIGATION -->
+    <div class="mb-3">
+        <a href="/Admin/Subscriptions" class="btn-back-plans">
+            <i class="fas fa-arrow-left"></i> Back to Plans
+        </a>
+    </div>
+
+    <!-- HEADER ROW -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <div class="filter-bar" style="margin-bottom:0;">
+            <a href="/Admin/SubscriptionUsers?status=All"
+               class="filter-btn @(ViewBag.SelectedStatus == "All" ? "active" : "")">
+                <i class="fa-solid fa-list"></i> All
+            </a>
+            <a href="/Admin/SubscriptionUsers?status=Active"
+               class="filter-btn @(ViewBag.SelectedStatus == "Active" ? "active" : "")">
+                <i class="fa-regular fa-circle-check"></i> Active
+            </a>
+            <a href="/Admin/SubscriptionUsers?status=Inactive"
+               class="filter-btn @(ViewBag.SelectedStatus == "Inactive" ? "active" : "")">
+                <i class="fa-regular fa-circle-xmark"></i> Inactive / Expired
+            </a>
+        </div>
+        <input type="text" id="searchInput" class="search-box" placeholder="Search plans..." style="width:220px;" />
+    </div>
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="od-alert od-alert-error mb-3"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+    }
+
+    @if (!grouped.Any())
+    {
+        <div class="empty-creative">
+            <i class="fas fa-users" style="font-size:3rem; color:var(--brand-light); margin-bottom:1rem;"></i>
+            <h3 style="font-weight:700; color:var(--text-primary); margin-bottom:0.5rem;">No Subscriptions Found</h3>
+            <p style="color:var(--text-secondary);">No users have purchased any plans yet.</p>
+        </div>
+    }
+    else
+    {
+        <!-- Summary Bar -->
+        <div class="summary-bar">
+            <i class="fas fa-chart-pie" style="color:#d3e058;"></i>
+            <strong>@Model.Subscriptions.Count</strong> total subscription(s) across
+            <strong>@grouped.Count</strong> plan(s) &nbsp;·&nbsp;
+            <strong>@byUser.Count</strong> unique user(s) &nbsp;·&nbsp;
+            <strong>@Model.Payments.Count</strong> payment record(s)
+        </div>
+
+        <!-- PLAN CARDS GRID -->
+        <div class="plans-grid" id="plansGrid">
+            @{ int cardDelay = 0; }
+            @foreach (var planGroup in grouped)
+            {
+                var planSubs    = planGroup.ToList();
+                var activeCount = planSubs.Count(s => s.Status == "Active");
+                var inactCount  = planSubs.Count(s => s.Status != "Active");
+                var totalCount  = planSubs.Count;
+                var hasActive   = activeCount > 0;
+
+                <div class="plan-card @(hasActive ? "active-card" : "no-active") sub-plan-card"
+                     data-planname="@planGroup.Key.PlanName.ToLower()"
+                     data-planid="@planGroup.Key.PlanId"
+                     style="animation-delay: @(cardDelay * 0.1)s;">
+
+                    <span class="plan-status @(hasActive ? "has-active" : "all-expired")">
+                        @if (hasActive) { <i class="fas fa-circle" style="font-size:0.5rem;"></i> } else { <i class="fas fa-minus-circle"></i> }
+                        @(hasActive ? "Has Active" : "Expired")
+                    </span>
+
+                    <div class="plan-icon-wrapper">
+                        <i class="fas fa-users"></i>
+                    </div>
+
+                    <h3 class="plan-title">@planGroup.Key.PlanName</h3>
+                    <div style="font-size:11px; color:#94a3b8; margin-bottom:0.25rem; font-weight:600;">Plan #@planGroup.Key.PlanId</div>
+
+                    <div class="sub-count-block">
+                        <span class="sub-count">@totalCount</span>
+                        <span class="sub-count-label">Subscriber@(totalCount != 1 ? "s" : "")</span>
+                    </div>
+
+                    <ul class="plan-features">
+                        <li>
+                            <div class="f-label"><i class="fas fa-circle-check f-icon"></i> Active</div>
+                            <span class="f-value">@activeCount</span>
+                        </li>
+                        <li>
+                            <div class="f-label"><i class="fas fa-circle-xmark f-icon"></i> Inactive / Expired</div>
+                            <span class="f-value">@inactCount</span>
+                        </li>
+                    </ul>
+
+                    <div class="plan-actions">
+                        <button type="button" class="btn-details" id="btn-@planGroup.Key.PlanId"
+                                onclick="toggleDetails(@planGroup.Key.PlanId)">
+                            <i class="fas fa-users"></i>
+                            <span>View Details</span>
+                        </button>
+                    </div>
+                </div>
+                cardDelay++;
+            }
+        </div>
+
+        <!-- DETAILS PANELS (one per plan) -->
+        @foreach (var planGroup in grouped)
+        {
+            var planSubs = planGroup.OrderBy(s => s.SubscriptionId).ToList();
+
+            <div class="details-panel" id="details-@planGroup.Key.PlanId" style="display:none;">
+                <div class="details-header">
+                    <div class="details-title">
+                        <div style="width:32px;height:32px;border-radius:8px;background:#f4f8c9;display:flex;align-items:center;justify-content:center;">
+                            <i class="fas fa-users" style="color:#b5c43d;font-size:14px;"></i>
+                        </div>
+                        @planGroup.Key.PlanName
+                        <span style="background:#eff6ff;color:#1d4ed8;font-size:11px;font-weight:700;padding:3px 10px;border-radius:999px;">
+                            @planSubs.Count subscriber(s)
+                        </span>
+                    </div>
+                    <button class="btn-close-panel" onclick="toggleDetails(@planGroup.Key.PlanId)" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+
+                <div class="equipments-table-wrap" style="margin-bottom:0;">
+                    <table class="table mb-0 details-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>User</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                                <th>Payment</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int rowNum = 0; }
+                            @foreach (var sub in planSubs)
+                            {
+                                rowNum++;
+                                var isActive  = sub.Status == "Active";
+                                var isExpired = sub.Status == "Expired";
+                                var statusCls = isActive ? "approved" : (isExpired ? "rejected" : "pending");
+                                <tr>
+                                    <td class="text-muted" style="font-size:12px;font-weight:700;width:40px;">@rowNum</td>
+                                    <td>
+                                        <div style="font-weight:700;color:#1e293b;">@sub.UserName</div>
+                                        <div style="font-size:12px;color:#64748b;">@sub.UserMobile</div>
+                                    </td>
+                                    <td style="font-size:13px;color:#475569;">@sub.StartDate.ToString("dd MMM yyyy")</td>
+                                    <td style="font-size:13px;color:#475569;">@sub.EndDate.ToString("dd MMM yyyy")</td>
+                                    <td><span class="status-badge @statusCls">@sub.Status</span></td>
+                                    <td>
+                                        <span class="status-badge @(sub.PaymentStatus == "Paid" ? "approved" : "pending")">
+                                            @sub.PaymentStatus
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button type="button" class="btn-user-detail"
+                                                onclick="openUserModal(@sub.UserId)">
+                                            <i class="fas fa-receipt"></i> Details
+                                        </button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        }
+    }
+
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     USER DETAIL MODALS  (one per unique user, pre-rendered)
+     ══════════════════════════════════════════════════════ -->
+@foreach (var userEntry in byUser)
+{
+    var userId   = userEntry.Key;
+    var userSubs = userEntry.Value; // ordered by SubscriptionId ASC
+    var first    = userSubs.First();
+    var initials = string.Join("", first.UserName.Split(' ', StringSplitOptions.RemoveEmptyEntries)
+                        .Take(2).Select(w => w[0].ToString().ToUpper()));
+
+    // All payment records for this user (newest first)
+    var userPayments = paymentsByUser.ContainsKey(userId)
+        ? paymentsByUser[userId]
+        : new List<AgriRent.ViewModels.AdminPaymentViewModel>();
+
+    var totalSpent = userPayments.Where(p => p.Status == "Successful").Sum(p => p.Amount);
+
+    <div class="user-modal-overlay" id="user-modal-@userId" style="display:none;"
+         onclick="if(event.target===this) closeUserModal(@userId)">
+        <div class="user-modal-box" onclick="event.stopPropagation()">
+
+            <!-- Header -->
+            <div class="user-modal-header">
+                <div style="display:flex;align-items:center;gap:14px;">
+                    <div class="user-modal-avatar">@initials</div>
+                    <div>
+                        <p class="user-modal-name">@first.UserName</p>
+                        <p class="user-modal-mobile"><i class="fas fa-phone" style="font-size:10px;"></i> @first.UserMobile</p>
+                    </div>
+                </div>
+                <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                    <span style="background:#eff6ff;color:#1d4ed8;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;">
+                        <i class="fas fa-layer-group" style="font-size:10px;"></i>
+                        @userSubs.Count subscription@(userSubs.Count != 1 ? "s" : "")
+                    </span>
+                    <span style="background:#dcfce7;color:#166534;font-size:12px;font-weight:700;padding:5px 14px;border-radius:999px;">
+                        <i class="fas fa-indian-rupee-sign" style="font-size:10px;"></i>
+                        @userPayments.Count payment@(userPayments.Count != 1 ? "s" : "")
+                        @if (totalSpent > 0) { <text>&nbsp;· ₹@totalSpent.ToString("N0")</text> }
+                    </span>
+                    <button class="btn-close-panel" onclick="closeUserModal(@userId)" title="Close">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Body -->
+            <div class="user-modal-body">
+
+                <!-- Subscription History -->
+                <div class="modal-section-title">
+                    <i class="fas fa-layer-group" style="color:#b5c43d;"></i> Subscription History
+                </div>
+                <div class="equipments-table-wrap" style="margin-bottom:1.75rem;">
+                    <table class="table mb-0 details-table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Plan</th>
+                                <th>Start Date</th>
+                                <th>End Date</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{ int subIdx = 0; }
+                            @foreach (var sub in userSubs)
+                            {
+                                subIdx++;
+                                var sCls = sub.Status == "Active" ? "approved" : (sub.Status == "Expired" ? "rejected" : "pending");
+                                <tr>
+                                    <td style="font-size:12px;font-weight:700;color:#94a3b8;width:36px;">@subIdx</td>
+                                    <td style="font-weight:700;color:#1e293b;">@sub.PlanName</td>
+                                    <td style="font-size:13px;color:#475569;">@sub.StartDate.ToString("dd MMM yyyy")</td>
+                                    <td style="font-size:13px;color:#475569;">@sub.EndDate.ToString("dd MMM yyyy")</td>
+                                    <td><span class="status-badge @sCls">@sub.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Payment Details — from Payments table (all individual transactions) -->
+                <div class="modal-section-title">
+                    <i class="fas fa-credit-card" style="color:#b5c43d;"></i> Payment History
+                    @if (userPayments.Count > 0)
+                    {
+                        <span style="background:#f0fdf4;color:#166534;font-size:11px;font-weight:700;padding:2px 10px;border-radius:999px;margin-left:4px;">
+                            @userPayments.Count transaction@(userPayments.Count != 1 ? "s" : "")
+                        </span>
+                    }
+                </div>
+
+                @if (userPayments.Count == 0)
+                {
+                    <div class="no-payments-note">
+                        <i class="fas fa-receipt" style="font-size:1.5rem;margin-bottom:0.5rem;display:block;"></i>
+                        No individual payment records found for this user.
+                    </div>
+                }
+                else
+                {
+                    <div class="equipments-table-wrap" style="margin-bottom:0;">
+                        <table class="table mb-0 details-table">
+                            <thead>
+                                <tr>
+                                    <th>#</th>
+                                    <th>Plan</th>
+                                    <th>Amount</th>
+                                    <th>Razorpay ID</th>
+                                    <th>Method</th>
+                                    <th>Status</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int payIdx = 0; }
+                                @foreach (var pay in userPayments)
+                                {
+                                    payIdx++;
+                                    var pCls = pay.Status == "Successful" ? "approved"
+                                             : pay.Status == "Failed"     ? "rejected"
+                                             : "pending";
+                                    <tr>
+                                        <td style="font-size:12px;font-weight:700;color:#94a3b8;width:36px;">@payIdx</td>
+                                        <td style="font-weight:600;color:#1e293b;white-space:nowrap;">@pay.PlanName</td>
+                                        <td>
+                                            @if (pay.Amount > 0)
+                                            {
+                                                <span class="amount-chip">₹@pay.Amount.ToString("N0")</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="color:#94a3b8;font-size:12px;">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(pay.RazorpayPaymentId))
+                                            {
+                                                <span class="razorpay-id" title="@pay.RazorpayPaymentId">@pay.RazorpayPaymentId</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="color:#94a3b8;font-size:12px;">—</span>
+                                            }
+                                        </td>
+                                        <td>
+                                            @if (!string.IsNullOrEmpty(pay.PaymentMethod))
+                                            {
+                                                <span class="method-chip">@pay.PaymentMethod</span>
+                                            }
+                                            else
+                                            {
+                                                <span style="color:#94a3b8;font-size:12px;">—</span>
+                                            }
+                                        </td>
+                                        <td><span class="status-badge @pCls">@pay.Status</span></td>
+                                        <td style="font-size:12px;color:#475569;white-space:nowrap;">
+                                            @pay.PaymentDate.ToString("dd MMM yyyy")
+                                            <div style="font-size:11px;color:#94a3b8;">@pay.PaymentDate.ToString("hh:mm tt")</div>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+}
+
+@section Scripts {
+<script>
+    let openPlanId = null;
+
+    function toggleDetails(planId) {
+        const panel = document.getElementById('details-' + planId);
+        const btn   = document.getElementById('btn-' + planId);
+
+        if (!panel) return;
+
+        if (openPlanId !== null && openPlanId !== planId) {
+            const prevPanel = document.getElementById('details-' + openPlanId);
+            const prevBtn   = document.getElementById('btn-' + openPlanId);
+            if (prevPanel) prevPanel.style.display = 'none';
+            if (prevBtn)   { prevBtn.classList.remove('active'); prevBtn.querySelector('span').textContent = 'View Details'; prevBtn.querySelector('i').className = 'fas fa-users'; }
+        }
+
+        const isOpen = panel.style.display !== 'none';
+        panel.style.display = isOpen ? 'none' : '';
+
+        if (btn) {
+            if (!isOpen) {
+                btn.classList.add('active');
+                btn.querySelector('span').textContent = 'Hide Details';
+                btn.querySelector('i').className = 'fas fa-times';
+                openPlanId = planId;
+                setTimeout(() => panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' }), 50);
+            } else {
+                btn.classList.remove('active');
+                btn.querySelector('span').textContent = 'View Details';
+                btn.querySelector('i').className = 'fas fa-users';
+                openPlanId = null;
+            }
+        }
+    }
+
+    function openUserModal(userId) {
+        document.querySelectorAll('.user-modal-overlay').forEach(m => m.style.display = 'none');
+        const modal = document.getElementById('user-modal-' + userId);
+        if (modal) {
+            modal.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+        }
+    }
+
+    function closeUserModal(userId) {
+        const modal = document.getElementById('user-modal-' + userId);
+        if (modal) modal.style.display = 'none';
+        document.body.style.overflow = '';
+    }
+
+    // Search filter
+    const searchInput = document.getElementById('searchInput');
+    searchInput?.addEventListener('input', function () {
+        const val = this.value.toLowerCase().trim();
+        document.querySelectorAll('.sub-plan-card').forEach(card => {
+            const planName = card.getAttribute('data-planname') ?? '';
+            card.style.display = (!val || planName.includes(val)) ? '' : 'none';
+        });
+    });
+</script>
+}

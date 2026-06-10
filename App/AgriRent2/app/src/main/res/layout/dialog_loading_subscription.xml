@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  PAYMENT LOADING — full-screen overlay with step progress.
+  Shows animated steps: Creating Order → Processing → Activating
+-->
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="@drawable/bg_dialog_dark"
+    android:padding="36dp">
+
+    <!-- Circular progress (large) -->
+    <ProgressBar
+        android:id="@+id/pbLoading"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:indeterminate="true"
+        android:indeterminateTint="#4CAF50"
+        android:layout_marginBottom="28dp" />
+
+    <!-- Dynamic status title -->
+    <TextView
+        android:id="@+id/tvLoadingTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Creating Order"
+        android:textColor="#FFFFFF"
+        android:textSize="19sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Sub message -->
+    <TextView
+        android:id="@+id/tvLoadingSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Please wait, do not press back…"
+        android:textColor="#99FFFFFF"
+        android:textSize="13sp"
+        android:layout_marginBottom="32dp" />
+
+    <!-- Steps row -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center">
+
+        <!-- Step 1 -->
+        <LinearLayout
+            android:id="@+id/llStep1"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvStep1Num"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="1"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_success_circle" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Order"
+                android:textColor="#77FFFFFF"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Connector 1 -->
+        <View
+            android:id="@+id/connector1"
+            android:layout_width="40dp"
+            android:layout_height="2dp"
+            android:background="#33FFFFFF"
+            android:layout_marginBottom="14dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp" />
+
+        <!-- Step 2 -->
+        <LinearLayout
+            android:id="@+id/llStep2"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvStep2Num"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="2"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_success_circle"
+                android:alpha="0.3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Payment"
+                android:textColor="#44FFFFFF"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+        <!-- Connector 2 -->
+        <View
+            android:id="@+id/connector2"
+            android:layout_width="40dp"
+            android:layout_height="2dp"
+            android:background="#33FFFFFF"
+            android:layout_marginBottom="14dp"
+            android:layout_marginStart="6dp"
+            android:layout_marginEnd="6dp" />
+
+        <!-- Step 3 -->
+        <LinearLayout
+            android:id="@+id/llStep3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center">
+
+            <TextView
+                android:id="@+id/tvStep3Num"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:gravity="center"
+                android:text="3"
+                android:textColor="#FFFFFF"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:background="@drawable/bg_success_circle"
+                android:alpha="0.3" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Activate"
+                android:textColor="#44FFFFFF"
+                android:textSize="11sp"
+                android:layout_marginTop="4dp" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

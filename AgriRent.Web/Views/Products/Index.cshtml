@@ -1,0 +1,88 @@
+@using AgriRent.Web.Services
+@model List<AgriRent.Models.Product>
+@{
+    ViewData["Title"] = "Farm Products";
+    var userSession = Context.Session.GetString("UserId");
+    bool isLoggedIn = !string.IsNullOrEmpty(userSession);
+    string productsLink = isLoggedIn ? "#products" : "/Account/Login";
+    
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" />
+    <style>
+        .products-page-header {
+            background: linear-gradient(135deg, rgba(255, 140, 0, 0.9) 0%, rgba(255, 165, 0, 0.9) 100%);
+            background-size: cover;
+            background-position: center;
+            padding: 80px 0;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 0 0 30px 30px;
+        }
+    </style>
+}
+
+<!-- Header -->
+<div class="products-page-header shadow-sm">
+    <div class="container">
+        <h1 class="display-4 fw-bold">@T("BuyProducts")</h1>
+        <p class="lead mb-0">@T("FreshFromFarm")</p>
+    </div>
+</div>
+
+<section class="section-padding pt-0">
+    <div class="container">
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-md-6 col-lg-3">
+                        <div class="equipment-card">
+                            <div class="equipment-img-wrapper" style="height: 180px;">
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/default-image.svg" : item.ImageUrl)" class="equipment-img" alt="@item.ProductName" onerror="this.onerror=null;this.src='/images/default-image.svg'">
+                            </div>
+                            <div class="p-3">
+                                <h6 class="text-uppercase text-success small fw-bold">@T("FreshProduce")</h6>
+                                <h5 class="fw-bold mb-1">@item.ProductName</h5>
+                                <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i> @item.Location</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="price-tag">₹@item.Price<span class="text-muted fs-6 fw-normal">/@item.Unit</span></span>
+                                    <a href="@productsLink" class="btn btn-sm btn-outline-success rounded-pill"><i class="fas fa-plus"></i></a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted fs-4"><i class="fas fa-shopping-basket fa-3x mb-3 text-warning opacity-50"></i></div>
+                    <p class="text-muted fs-5">@T("NoProductsAvailable")</p>
+                </div>
+            }
+        </div>
+
+        @if (ViewBag.CurrentPage > 1 || ViewBag.HasMore)
+        {
+            <div class="d-flex justify-content-center mt-5">
+                <nav>
+                    <ul class="pagination pagination-lg">
+                        <li class="page-item @(ViewBag.CurrentPage == 1 ? "disabled" : "")">
+                            <a class="page-link text-success" href="/Products?page=@(ViewBag.CurrentPage - 1)&pageSize=@ViewBag.PageSize">@T("Previous")</a>
+                        </li>
+                        <li class="page-item disabled"><span class="page-link">@ViewBag.CurrentPage</span></li>
+                        <li class="page-item @(!ViewBag.HasMore ? "disabled" : "")">
+                            <a class="page-link text-success" href="/Products?page=@(ViewBag.CurrentPage + 1)&pageSize=@ViewBag.PageSize">@T("Next")</a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+        }
+    </div>
+</section>

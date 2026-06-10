@@ -1,0 +1,289 @@
+@{
+    Layout = "_SellerLayout";
+    ViewData["Title"] = "Add Product – AgriRent";
+    var categories = ViewBag.Categories as List<object> ?? new List<object>();
+}
+
+@section Styles {
+    <style>
+        .ae-wrap { max-width: 860px; margin: 0 auto; padding-bottom: 60px; }
+        
+        .ae-card { background: #fff; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,.04); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+
+        .ae-card-header {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            padding: 36px 40px; color: #fff; position: relative; overflow: hidden;
+        }
+        .ae-card-header h2 { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; margin: 0 0 6px; position: z-index: 1; }
+        .ae-bg-shape { position: absolute; width: 150px; height: 150px; background: #f59e0b; filter: blur(40px); opacity: 0.3; border-radius: 50%; right: -20px; top: -50px; }
+
+        .ae-card-body { padding: 40px; }
+
+        .ae-section { font-size: 12px; font-weight: 800; color: #94a3b8; letter-spacing: 1px; text-transform: uppercase; margin: 28px 0 16px; }
+        .ae-section:first-child { margin-top: 0; }
+        .ae-divider { border: none; border-top: 1px dashed #e2e8f0; margin: 32px 0; }
+
+        .ae-group { margin-bottom: 20px; }
+        .ae-label { display: block; font-size: 14px; font-weight: 700; color: #334155; margin-bottom: 8px; }
+        .ae-label span { color: #ef4444; margin-left: 2px; }
+        .ae-input, .ae-select, .ae-textarea {
+            width: 100%; border: 2px solid #e2e8f0; border-radius: 12px;
+            padding: 12px 16px; font-size: 15px; font-family: 'Plus Jakarta Sans', sans-serif;
+            color: #0f172a; background: #f8fafc; transition: all .2s;
+        }
+        .ae-input:focus, .ae-select:focus, .ae-textarea:focus {
+            outline: none; border-color: #f59e0b; background: #fff; box-shadow: 0 4px 12px rgba(245,158,11,0.1);
+        }
+        .ae-textarea { resize: vertical; min-height: 120px; }
+        .ae-row { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+        /* ── Image Drop Zone ─────────────────────────────────────────────── */
+        .ae-drop {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 24px;
+            text-align: center; cursor: pointer; transition: all .25s; background: #f8fafc;
+            position: relative;
+        }
+        .ae-drop.drag-over { border-color: #f59e0b; background: #fffbeb; }
+        .ae-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .ae-drop-icon { font-size: 36px; color: #94a3b8; margin-bottom: 12px; transition: 0.2s; }
+        .ae-drop:hover .ae-drop-icon { color: #f59e0b; transform: translateY(-4px); }
+        .ae-drop-title { font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 4px; }
+        .ae-drop-sub   { font-size: 14px; color: #94a3b8; }
+        .ae-drop-hint  { margin-top: 12px; font-size: 12px; color: #cbd5e1; font-weight: 600; }
+
+        /* Preview grid */
+        #img-preview { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 16px; }
+        .ae-thumb {
+            width: 90px; height: 90px; border-radius: 12px; object-fit: cover;
+            border: 2px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .ae-thumb-wrap { position: relative; display: inline-block; animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .ae-thumb-del {
+            position: absolute; top: -8px; right: -8px;
+            background: #ef4444; color: #fff; border: none; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            transition: 0.2s;
+        }
+        .ae-thumb-del:hover { transform: scale(1.1); background: #dc2626; }
+
+        /* ── Submit ─────────────────────────────────────────────────────── */
+        .ae-submit {
+            width: 100%; padding: 16px;
+            background: #f59e0b;
+            color: #fff; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all .2s; margin-top: 16px; box-shadow: 0 8px 20px rgba(245,158,11,0.3);
+        }
+        .ae-submit:hover   { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(245,158,11,0.4); background: #d97706; }
+        .ae-submit:active  { transform: scale(.98); }
+        .ae-submit:disabled { opacity: .7; cursor: not-allowed; transform: none; box-shadow: none; background: #94a3b8; }
+
+        @@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+}
+
+<div class="od-header">
+    <h1 class="page-title"><i class="fas fa-plus-circle text-emerald-500"></i> List New Product</h1>
+</div>
+
+<div class="ae-wrap animate-fade-in">
+    <div class="ae-card">
+        <div class="ae-card-header">
+            <div class="ae-bg-shape"></div>
+            <h2>Product Information</h2>
+        </div>
+
+        <div class="ae-card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="od-alert od-alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="od-alert od-alert-error"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+            }
+
+            <form method="post" action="/Seller/AddProduct" enctype="multipart/form-data" id="addForm">
+                @Html.AntiForgeryToken()
+
+                <div class="ae-section">1. Basic Info</div>
+
+                <div class="ae-group">
+                    <label class="ae-label">Product Name <span>*</span></label>
+                    <input type="text" name="productName" class="ae-input" placeholder="e.g. Organic Neem Cake" required maxlength="200" />
+                </div>
+
+                <div class="ae-group">
+                    <label class="ae-label">Description <span>*</span></label>
+                    <textarea name="description" class="ae-textarea" placeholder="Detailed product description..." required minlength="10" maxlength="2000"></textarea>
+                </div>
+
+                <hr class="ae-divider" />
+                <div class="ae-section">2. Categorization & Pricing</div>
+
+                <div class="ae-row">
+                    <div class="ae-group">
+                        <label class="ae-label">Category <span>*</span></label>
+                        <select id="categorySelect" class="ae-select" onchange="loadSubCategories(this)" required>
+                            <option value="">— Select Category —</option>
+                            @foreach (dynamic cat in categories)
+                            {
+                                <option value="@cat.id">@cat.name</option>
+                            }
+                        </select>
+                    </div>
+                    <div class="ae-group">
+                        <label class="ae-label">Sub-Category <span>*</span></label>
+                        <select id="subCatSelect" name="subCategoryId" class="ae-select" required>
+                            <option value="">— Select Category First —</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="ae-row">
+                    <div class="ae-group">
+                        <label class="ae-label">Price Rate (₹) <span>*</span></label>
+                        <input type="number" name="price" class="ae-input" placeholder="e.g. 850" min="1" max="1000000" step="0.01" required />
+                    </div>
+                    <div class="ae-group">
+                        <label class="ae-label">Unit <span>*</span></label>
+                        <input type="text" name="unit" class="ae-input" placeholder="e.g. Kg, Bag, Litre" required />
+                    </div>
+                </div>
+                
+                <div class="ae-row">
+                    <div class="ae-group">
+                        <label class="ae-label">Available Stock <span>*</span></label>
+                        <input type="number" name="stock" class="ae-input" placeholder="e.g. 50" min="1" max="10000" required />
+                    </div>
+                    <div class="ae-group">
+                        <label class="ae-label">Store Location <span>*</span></label>
+                        <input type="text" name="location" class="ae-input" placeholder="e.g. Ahmedabad, Gujarat" required maxlength="200" />
+                    </div>
+                </div>
+
+                <hr class="ae-divider" />
+                <div class="ae-section">3. High Quality Photos <span style="color:#ef4444;">*</span></div>
+
+                <div id="photoError" class="od-alert od-alert-error" style="display:none;margin-bottom:16px;">
+                    <i class="fas fa-camera"></i> Please upload at least one photo of the product.
+                </div>
+
+                <div class="ae-drop" id="dropZone">
+                    <input type="file" name="images" id="imageInput" accept=".jpg,.jpeg,.png,.webp" multiple />
+                    <div class="ae-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="ae-drop-title">Drag & drop photos here</div>
+                    <div class="ae-drop-sub">or <strong style="color:#f59e0b;">click to browse files</strong></div>
+                    <div class="ae-drop-hint">JPG, PNG, WEBP · Max 5 MB per file</div>
+                </div>
+
+                <div id="img-preview"></div>
+
+                <button type="submit" class="ae-submit" id="submitBtn">
+                    <i class="fas fa-paper-plane"></i> <span id="submitText">Submit Product for Approval</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const catMap = {};
+@foreach (dynamic cat in categories)
+{
+    <text>catMap[@cat.id] = [</text>
+    @foreach (dynamic sub in cat.subCategories)
+    {
+        <text>{ id: @sub.id, name: "@sub.name" },</text>
+    }
+    <text>];</text>
+}
+
+function loadSubCategories(sel) {
+    const subSel = document.getElementById('subCatSelect');
+    subSel.innerHTML = '<option value="">— Select Sub-Category —</option>';
+    (catMap[sel.value] || []).forEach(s => {
+        const opt = document.createElement('option');
+        opt.value = s.id; opt.textContent = s.name;
+        subSel.appendChild(opt);
+    });
+}
+
+const dropZone = document.getElementById('dropZone');
+const imageInput = document.getElementById('imageInput');
+const preview = document.getElementById('img-preview');
+let fileList = []; 
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    addFiles([...e.dataTransfer.files]);
+});
+imageInput.addEventListener('change', () => {
+    addFiles([...imageInput.files]);
+});
+
+function addFiles(files) {
+    files.forEach(f => {
+        const ext = f.name.split('.').pop().toLowerCase();
+        const okType = f.type.startsWith('image/');
+        const okExt  = ['jpg','jpeg','png','webp'].includes(ext);
+        if (!okType && !okExt) return;
+        if (f.size > 5 * 1024 * 1024) { alert(f.name + ' exceeds 5 MB limit'); return; }
+        fileList.push(f);
+    });
+    renderPreviews();
+    syncFilesToInput();
+    
+    if (fileList.length > 0) {
+        document.getElementById('photoError').style.display = 'none';
+        dropZone.style.borderColor = '#f59e0b';
+        document.querySelector('.ae-drop-icon').style.color = '#f59e0b';
+    } else {
+        dropZone.style.borderColor = '#cbd5e1';
+        document.querySelector('.ae-drop-icon').style.color = '#94a3b8';
+    }
+}
+
+function renderPreviews() {
+    preview.innerHTML = '';
+    fileList.forEach((f, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'ae-thumb-wrap';
+        const img = document.createElement('img');
+        img.className = 'ae-thumb';
+        img.src = URL.createObjectURL(f);
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'ae-thumb-del'; del.innerHTML = '<i class="fas fa-times"></i>';
+        del.onclick = () => { fileList.splice(i, 1); renderPreviews(); syncFilesToInput(); };
+        wrap.appendChild(img); wrap.appendChild(del); preview.appendChild(wrap);
+    });
+}
+
+function syncFilesToInput() {
+    const dt = new DataTransfer();
+    fileList.forEach(f => dt.items.add(f));
+    imageInput.files = dt.files;
+}
+
+document.getElementById('addForm').addEventListener('submit', e => {
+    if (fileList.length === 0) {
+        e.preventDefault();
+        const errDiv = document.getElementById('photoError');
+        errDiv.style.display = 'flex';
+        errDiv.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        dropZone.style.borderColor = '#ef4444';
+        document.querySelector('.ae-drop-icon').style.color = '#ef4444';
+        return;
+    }
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
+});
+</script>
+}

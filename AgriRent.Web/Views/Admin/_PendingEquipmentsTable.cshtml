@@ -1,0 +1,49 @@
+@model List<AgriRent.ViewModels.PendingEquipmentViewModel>
+
+@if (!Model.Any())
+{
+    <tr>
+        <td colspan="7" class="empty-row">
+            No equipments found
+        </td>
+    </tr>
+}
+else
+{
+    foreach (var item in Model)
+    {
+        <tr>
+            <td>
+                <img src="@item.ImageUrl"
+                     class="equipment-img"
+                     onerror="this.onerror=null;this.src='/images/default-image.svg'" />
+            </td>
+
+            <td><strong>@item.EquipmentName</strong></td>
+            <td>@item.Description</td>
+
+            <td class="price">
+                ₹@item.Price <br />
+                <small>@item.PriceType</small>
+            </td>
+
+            <td>@item.Location</td>
+
+            <td>
+                <span class="status-badge">@item.Status</span>
+            </td>
+
+            <td>
+                <form asp-action="ApproveEquipment" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@item.EquipmentId" />
+                    <button class="btn-approve">Approve</button>
+                </form>
+
+                <form asp-action="RejectEquipment" method="post" style="display:inline;">
+                    <input type="hidden" name="id" value="@item.EquipmentId" />
+                    <button class="btn-reject">Reject</button>
+                </form>
+            </td>
+        </tr>
+    }
+}

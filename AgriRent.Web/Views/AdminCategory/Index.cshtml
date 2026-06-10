@@ -1,0 +1,471 @@
+@model IEnumerable<AgriRent.DTOs.CategoryDto>
+@{
+    ViewData["Title"] = "Category Management";
+    Layout = "_AdminLayout";
+
+    // Dynamic Icon Mapping logic
+    string GetCategoryIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "fa-leaf";
+        name = name.ToLower();
+        if (name.Contains("tractor")) return "fa-tractor";
+        if (name.Contains("plough") || name.Contains("plow")) return "fa-screwdriver-wrench";
+        if (name.Contains("sprayer")) return "fa-spray-can-sparkles";
+        if (name.Contains("seeder") || name.Contains("seed")) return "fa-seedling";
+        if (name.Contains("irrigation") || name.Contains("water")) return "fa-droplet";
+        if (name.Contains("harvester")) return "fa-wheat-awn";
+        if (name.Contains("tool")) return "fa-tools";
+        if (name.Contains("truck") || name.Contains("vehicle")) return "fa-truck-front";
+        return "fa-leaf"; // Default
+    }
+}
+
+<style>
+    /* FIX: Changed from display=swap (render-blocking) to display=optional (non-blocking) */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional');
+
+    :root {
+        --brand-primary: #12372A;
+        --brand-accent: #D4E157; /* Exact match to nav bar lime green */
+        --accent-hover: #C5D148;
+        --bg-soft: #f8faf9;
+        --text-primary: #1A1C1E;
+        --text-secondary: #5F6368;
+        --radius-premium: 16px;
+        --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: var(--bg-soft);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-primary);
+    }
+
+    .premium-container {
+        padding: 30px;
+    }
+
+    /* Header */
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+    }
+
+    .header-content h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--brand-primary);
+        margin: 0;
+        letter-spacing: -0.8px;
+    }
+
+    .header-content p {
+        color: var(--text-secondary);
+        margin: 5px 0 0 0;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .btn-add-premium {
+        background: var(--brand-accent);
+        color: var(--brand-primary);
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 20px rgba(212, 225, 87, 0.2);
+        border: none;
+    }
+
+    .btn-add-premium:hover {
+        background: var(--accent-hover);
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(212, 225, 87, 0.3);
+        color: var(--brand-primary);
+    }
+
+    /* Table Styling */
+    .table-card {
+        background: white;
+        border-radius: var(--radius-premium);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+
+    .premium-table th {
+        background: #fcfdfc;
+        padding: 22px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--text-secondary);
+        border-bottom: 2px solid #f0f2f0;
+    }
+
+    .premium-table td {
+        padding: 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f3f1;
+        font-size: 0.95rem;
+    }
+
+    .premium-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .premium-table tr:hover {
+        background-color: #f9fbf9;
+    }
+
+    /* Category Icon Box */
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        background: rgba(212, 225, 87, 0.12);
+        color: var(--brand-primary);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+    }
+
+    tr:hover .icon-box {
+        transform: scale(1.1) rotate(5deg);
+        background: var(--brand-accent);
+        color: var(--brand-primary);
+    }
+
+    /* Power Button Toggle */
+    .status-toggle-form {
+        margin: 0;
+        display: inline-block;
+    }
+
+    .power-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+        position: relative;
+    }
+
+    .power-active {
+        background: #ecfdf5;
+        color: #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
+
+    .power-active:hover {
+        background: #10b981;
+        color: white;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .power-inactive {
+        background: #fff1f2;
+        color: #f43f5e;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.1);
+    }
+
+    .power-inactive:hover {
+        background: #f43f5e;
+        color: white;
+        box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25);
+    }
+
+    /* Subcategory Badge */
+    .count-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        padding: 8px 16px;
+        background: rgba(18, 55, 42, 0.04);
+        color: var(--brand-primary);
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        border: 1px solid rgba(18, 55, 42, 0.05);
+    }
+
+    /* Action Buttons */
+    .actions-flex {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-table-action {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        font-size: 1.1rem;
+    }
+
+    .btn-table-manage {
+        background: #f8fafc;
+        color: #64748b;
+        border: 1px solid #e2e8f0;
+    }
+
+    .btn-table-manage:hover {
+        background: #12372A;
+        color: #D4E157;
+        border-color: #12372A;
+        transform: translateY(-2px);
+    }
+
+    .btn-table-edit {
+        background: #f0f9ff;
+        color: #0ea5e9;
+        border: 1px solid #e0f2fe;
+    }
+
+    .btn-table-edit:hover {
+        background: #0ea5e9;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-table-delete {
+        background: #fff1f2;
+        color: #f43f5e;
+        border: 1px solid #ffe4e6;
+        cursor: pointer;
+    }
+
+    .btn-table-delete:hover {
+        background: #f43f5e;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-row {
+        text-align: center;
+        padding: 100px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #e2e8f0;
+        margin-bottom: 25px;
+        display: block;
+    }
+
+    /* Custom Alert */
+    .premium-alert {
+        border-radius: 16px;
+        border: none;
+        padding: 18px 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        font-weight: 600;
+    }
+
+    /* Filter Tabs */
+    .filter-bar {
+        display: flex;
+        gap: 8px;
+        flex-wrap: wrap;
+        margin-bottom: 20px;
+    }
+
+    .filter-tab {
+        padding: 9px 20px;
+        border-radius: 10px;
+        text-decoration: none !important;
+        font-weight: 600;
+        font-size: 0.84rem;
+        color: var(--text-secondary);
+        background: white;
+        border: 1.5px solid #e2e8f0;
+        transition: all 0.2s ease;
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+    }
+
+    .filter-tab:hover {
+        background: #f1f5f9;
+        color: var(--brand-primary);
+        border-color: var(--brand-primary);
+    }
+
+    .filter-tab.tab-active {
+        background: var(--brand-primary);
+        color: white;
+        border-color: var(--brand-primary);
+    }
+
+    .filter-tab.tab-green.tab-active {
+        background: #16a34a;
+        border-color: #16a34a;
+    }
+
+    .filter-tab.tab-red.tab-active {
+        background: #dc2626;
+        border-color: #dc2626;
+    }
+</style>
+
+<div class="premium-container">
+
+    <!-- Header -->
+    <div class="header-row">
+        <div class="header-content">
+            <h1>Categories</h1>
+            <p>Master control for all agricultural equipment categories.</p>
+        </div>
+        <a href="/AdminCategory/Create" class="btn-add-premium">
+            <i class="fa-solid fa-plus"></i>
+            New Category
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success premium-alert alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items: center;">
+                <i class="fa-solid fa-check-double me-3" style="font-size: 1.2rem;"></i> 
+                <span>@TempData["Success"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger premium-alert alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items: center;">
+                <i class="fa-solid fa-triangle-exclamation me-3" style="font-size: 1.2rem;"></i>
+                <span>@TempData["Error"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Filter Bar -->
+    @{
+        string cur = ViewBag.CurrentStatus ?? "All";
+    }
+    <div class="filter-bar">
+        <a href="/AdminCategory" class="filter-tab @(cur == "All" ? "tab-active" : "")">
+            <i class="fa-solid fa-border-all"></i> All
+        </a>
+        <a href="/AdminCategory?status=Active" class="filter-tab tab-green @(cur == "Active" ? "tab-active" : "")">
+            <i class="fa-solid fa-circle-check"></i> Active
+        </a>
+        <a href="/AdminCategory?status=Inactive" class="filter-tab tab-red @(cur == "Inactive" ? "tab-active" : "")">
+            <i class="fa-solid fa-circle-xmark"></i> Inactive
+        </a>
+    </div>
+
+    <!-- Table Card -->
+    <div class="table-card">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Icon</th>
+                    <th>Category Detailed Name</th>
+                    <th style="width: 130px;">Status</th>
+                    <th style="width: 200px;">Internal Layout</th>
+                    <th class="text-end">Management Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        var subCount = item.SubCategories?.Count ?? 0;
+                        var isActive = item.Status == "Active";
+                        
+                        <tr>
+                            <td>
+                                <div class="icon-box">
+                                    <i class="fa-solid @GetCategoryIcon(item.Name)"></i>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; font-size: 1.1rem; color: var(--brand-primary); letter-spacing: -0.2px;">@item.Name</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px; font-weight: 500;">REFERENCE ID: #@item.CategoryId</div>
+                            </td>
+                            <td>
+                                <form asp-action="ToggleStatus" asp-route-id="@item.CategoryId" method="post" class="status-toggle-form">
+                                    <button type="submit" class="power-btn @(isActive ? "power-active" : "power-inactive")" 
+                                            title="Click to toggle status (Current: @item.Status)">
+                                        <i class="fa-solid fa-power-off"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <div class="count-badge">
+                                    <i class="fa-solid fa-layer-group"></i>
+                                    @subCount Sub-Items
+                                </div>
+                            </td>
+                            <td>
+                                <div class="actions-flex">
+                                    <a href="/AdminCategory/SubCategories/@item.CategoryId" class="btn-table-action btn-table-manage" title="View Subcategories">
+                                        <i class="fa-solid fa-arrow-right-to-bracket"></i>
+                                    </a>
+                                    <a href="/AdminCategory/Edit/@item.CategoryId" class="btn-table-action btn-table-edit" title="Settings">
+                                        <i class="fa-solid fa-gear"></i>
+                                    </a>
+                                    <form action="/AdminCategory/Delete/@item.CategoryId" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="btn-table-action btn-table-delete" title="Remove"
+                                                onclick="return confirm('CRITICAL: Deleting \'@item.Name\' is only possible if it has 0 subcategories. Proceed?')">
+                                            <i class="fa-solid fa-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5">
+                            <div class="empty-row">
+                                <i class="fa-solid fa-wheat-awn-circle-exclamation empty-icon"></i>
+                                <h3 style="color: var(--brand-primary); font-weight: 800; font-size: 1.5rem;">No Data Available</h3>
+                                <p style="color: var(--text-secondary); max-width: 400px; margin: 10px auto;">Your inventory is currently empty. Click the button above to create your first category and start managing equipment.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

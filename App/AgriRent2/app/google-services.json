@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "948046919127",
+    "project_id": "agrirent-app",
+    "storage_bucket": "agrirent-app.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:948046919127:android:923800aeb79fc4bfc58792",
+        "android_client_info": {
+          "package_name": "com.example.agrirent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAcVjm3YEub-DG85iLBbkkq1So9sW-dmms"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

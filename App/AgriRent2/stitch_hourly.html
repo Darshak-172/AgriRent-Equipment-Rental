@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriRent Hourly Booking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@100..900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1b6a4c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#131f1a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative flex h-auto min-h-screen w-full flex-col bg-background-light dark:bg-background-dark group/design-root overflow-x-hidden max-w-[430px] mx-auto shadow-2xl">
+<!-- Header with Dark Green Gradient -->
+<div class="bg-gradient-to-r from-primary to-[#2d8a66] p-4 pb-6 rounded-b-xl shadow-lg">
+<div class="flex items-center justify-between mb-4">
+<div class="text-white flex size-10 shrink-0 items-center justify-center rounded-full bg-white/10 backdrop-blur-md">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center pr-10">Book Equipment</h2>
+</div>
+</div>
+<!-- Equipment Card -->
+<div class="px-4 -mt-4">
+<div class="flex items-stretch justify-between gap-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-md border border-primary/5">
+<div class="flex flex-col gap-1 flex-[2_2_0px]">
+<span class="inline-flex w-fit px-2 py-0.5 rounded-full bg-primary/10 text-primary text-xs font-bold">₹500/hr</span>
+<p class="text-slate-900 dark:text-white text-base font-bold leading-tight mt-1">Mahindra Novo 605 DI</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal">Tractor</p>
+</div>
+<div class="w-32 h-20 bg-center bg-no-repeat bg-cover rounded-lg" data-alt="Red Mahindra tractor in a green field" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDwvt8HfD96klh8phkSHY3-JR1TzgEi540B3BTf4GaNbfGrnui30lQ2hVUEIrlR8U1pQHRUyIyZTd1UCfa48t2FJ-v7hnC0WM8TzRYFoTkWy7gJI9lQBiDySiLaNitKPDKGjYgIURRKvSuVy00O8nm_tlOpFU7iNfpdlq6rgSiAv0t_6MrMPDgXiKACgDN9OX82eqWhWV-UoxF5HR09uJcWmAFqbtEXmEX-si4gGyxACWX1tlQAwqNVn1COfgPlYDRRLOoFmck3Wiza");'>
+</div>
+</div>
+</div>
+<!-- Booking Mode Toggle -->
+<div class="flex px-4 py-6">
+<div class="flex h-12 flex-1 items-center justify-center rounded-full bg-slate-200 dark:bg-slate-700 p-1">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 bg-primary shadow-sm text-white text-sm font-bold leading-normal transition-all">
+<span class="truncate">Hourly</span>
+<input checked="" class="invisible w-0" name="mode" type="radio" value="Hourly"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-full px-2 text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal hover:bg-slate-300/50 transition-all">
+<span class="truncate">Daily</span>
+<input class="invisible w-0" name="mode" type="radio" value="Daily"/>
+</label>
+</div>
+</div>
+<!-- Calendar Section -->
+<div class="px-4">
+<div class="bg-white dark:bg-slate-800 rounded-xl p-4 shadow-sm border border-slate-100 dark:border-slate-700">
+<div class="flex items-center justify-between mb-2">
+<button class="text-primary p-2"><span class="material-symbols-outlined">chevron_left</span></button>
+<p class="text-slate-900 dark:text-white text-base font-bold">March 2026</p>
+<button class="text-primary p-2"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+<div class="grid grid-cols-7 text-center">
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">S</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">M</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">T</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">W</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">T</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">F</p>
+<p class="text-slate-400 text-[11px] font-bold py-2 uppercase tracking-wider">S</p>
+<div class="py-2 text-sm text-slate-300">22</div>
+<div class="py-2 text-sm text-slate-300">23</div>
+<div class="py-2 text-sm text-slate-300">24</div>
+<div class="py-2 text-sm text-slate-300">25</div>
+<div class="py-2 text-sm text-slate-300">26</div>
+<div class="py-2 text-sm text-slate-300">27</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">1</div>
+<!-- Calendar continues with selection -->
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">2</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">3</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">4</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">5</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">6</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">7</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">8</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">9</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">10</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">11</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">12</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">13</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">14</div>
+<div class="flex items-center justify-center">
+<div class="flex size-8 items-center justify-center rounded-full bg-primary text-white font-bold shadow-md shadow-primary/30">15</div>
+</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">16</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">17</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">18</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">19</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">20</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">21</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">22</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">23</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">24</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">25</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">26</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">27</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">28</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">29</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">30</div>
+<div class="py-2 text-sm text-slate-900 dark:text-slate-100">31</div>
+</div>
+</div>
+</div>
+<!-- Time Selector -->
+<h3 class="text-slate-900 dark:text-white text-base font-bold px-4 pt-6 pb-2">Select Start Time</h3>
+<div class="flex overflow-x-auto px-4 gap-2 pb-2 no-scrollbar">
+<div class="flex-none px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">08 AM</div>
+<div class="flex-none px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">09 AM</div>
+<div class="flex-none px-5 py-2 rounded-full bg-primary text-white text-sm font-bold shadow-sm">10 AM</div>
+<div class="flex-none px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">11 AM</div>
+<div class="flex-none px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">12 PM</div>
+<div class="flex-none px-5 py-2 rounded-full border border-slate-200 dark:border-slate-700 text-sm font-medium text-slate-600 dark:text-slate-300">01 PM</div>
+</div>
+<!-- Duration Selector -->
+<div class="px-4 py-6">
+<div class="flex items-center justify-between p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 shadow-sm">
+<span class="text-slate-900 dark:text-white font-bold">Duration</span>
+<div class="flex items-center gap-4">
+<button class="size-10 rounded-full border border-slate-200 dark:border-slate-700 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined">remove</span>
+</button>
+<span class="text-lg font-bold min-w-[60px] text-center">2 hours</span>
+<button class="size-10 rounded-full bg-primary flex items-center justify-center text-white">
+<span class="material-symbols-outlined">add</span>
+</button>
+</div>
+</div>
+</div>
+<div class="h-32"></div> <!-- Spacer for fixed footer -->
+<!-- Bottom Summary & Button -->
+<div class="fixed bottom-0 w-full max-w-[430px] bg-white dark:bg-slate-900 border-t border-slate-100 dark:border-slate-800 p-4 pb-8 shadow-[0_-4px_20px_rgba(0,0,0,0.05)]">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">₹500/hr × 2 hrs</p>
+<p class="text-slate-900 dark:text-white text-xl font-black tracking-tight">₹1,000</p>
+</div>
+<div class="flex items-center gap-1 text-primary text-xs font-bold bg-primary/10 px-2 py-1 rounded">
+<span class="material-symbols-outlined text-[14px]">local_offer</span>
+                    Promo applied
+                </div>
+</div>
+<button class="w-full bg-primary hover:bg-[#15543d] text-white font-bold py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                Confirm Booking
+            </button>
+</div>
+</div>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</body></html>

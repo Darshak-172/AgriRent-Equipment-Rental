@@ -1,0 +1,161 @@
+@{
+    Layout = "_OwnerLayout";
+    ViewData["Title"] = "Upload Equipment Photo – AgriRent";
+    int equipmentId = ViewBag.EquipmentId ?? 0;
+}
+
+@section Styles {
+    <style>
+        .ae-wrap { max-width: 640px; margin: 0 auto; padding-bottom: 60px; }
+        
+        .ae-card { background: #fff; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,.04); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+
+        .ae-card-header {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            padding: 36px 40px; color: #fff; position: relative; overflow: hidden;
+            display: flex; justify-content: space-between; align-items: flex-start;
+        }
+        .header-text { position: z-index: 1; }
+        .ae-card-header h2 { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; margin: 0 0 6px; }
+        .ae-card-header p  { font-size: 14.5px; opacity: .8; margin: 0; color: #cbd5e1; }
+        .ae-bg-shape { position: absolute; width: 150px; height: 150px; background: #eab308; filter: blur(40px); opacity: 0.25; border-radius: 50%; right: -20px; top: -50px; }
+        
+        .ae-card-body { padding: 40px; }
+
+        .eq-chip {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: #f8fafc; color: #475569; border: 1px solid #e2e8f0; border-radius: 12px;
+            padding: 8px 16px; font-size: 14px; font-weight: 700; margin-bottom: 24px;
+        }
+
+        /* ── Image Drop Zone ─────────────────────────────────────────────── */
+        .ae-drop {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 48px 24px;
+            text-align: center; cursor: pointer; transition: all .25s; background: #f8fafc;
+            position: relative;
+        }
+        .ae-drop.drag-over { border-color: #eab308; background: #fefce8; }
+        .ae-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .ae-drop-icon { font-size: 42px; color: #94a3b8; margin-bottom: 16px; transition: 0.3s; }
+        .ae-drop:hover .ae-drop-icon { color: #eab308; transform: translateY(-4px); }
+        .ae-drop-title { font-size: 18px; font-weight: 800; color: #334155; margin-bottom: 6px; letter-spacing: -0.3px; }
+        .ae-drop-sub   { font-size: 14.5px; color: #94a3b8; }
+        .ae-drop-hint  { margin-top: 16px; font-size: 13px; color: #cbd5e1; font-weight: 600; }
+
+        /* Preview */
+        #preview-wrap { margin-top: 24px; display: none; text-align: center; animation: slideUp 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        #preview-img  { width: 100%; max-height: 280px; object-fit: cover; border-radius: 16px; border: 2px solid #e2e8f0; box-shadow: 0 12px 24px rgba(0,0,0,.06); }
+        .preview-name { font-size: 13px; color: #94a3b8; margin-top: 12px; font-weight: 600; }
+
+        /* ── Submit ─────────────────────────────────────────────────────── */
+        .ae-submit {
+            width: 100%; padding: 16px;
+            background: #eab308;
+            color: #fff; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 800; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all .2s; margin-top: 24px; box-shadow: 0 8px 20px rgba(234, 179, 8, 0.25);
+        }
+        .ae-submit:hover   { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(234, 179, 8, 0.35); background: #ca8a04; }
+        .ae-submit:active  { transform: scale(.98); }
+        .ae-submit:disabled { opacity: .7; cursor: not-allowed; transform: none; box-shadow: none; background: #94a3b8; }
+
+        @@keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+    </style>
+}
+
+<div class="od-header">
+    <h1 class="page-title"><i class="fas fa-images text-yellow-500"></i> Manage Photos</h1>
+</div>
+
+<div class="ae-wrap animate-fade-in">
+    <div class="ae-card">
+        <div class="ae-card-header">
+            <div class="ae-bg-shape"></div>
+            <div class="header-text">
+                <h2>Upload Equipment Image</h2>
+            </div>
+        </div>
+
+        <div class="ae-card-body">
+            @if (TempData["Success"] != null)
+            {
+                <div class="od-alert od-alert-success"><i class="fas fa-check-circle"></i> @TempData["Success"]</div>
+            }
+            @if (TempData["Error"] != null)
+            {
+                <div class="od-alert od-alert-error"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+            }
+
+            <div class="eq-chip">
+                <i class="fas fa-hashtag text-yellow-500"></i> Equipment Ref: <strong>@equipmentId</strong>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="/Owner/UploadImage" id="uploadForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="equipmentId" value="@equipmentId" />
+
+                <div class="ae-drop" id="dropZone">
+                    <input type="file" name="image" id="imageInput" accept=".jpg,.jpeg,.png,.webp" />
+                    <div class="ae-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="ae-drop-title">Drop your photo here</div>
+                    <div class="ae-drop-sub">or <strong style="color:#eab308;">click to browse files</strong></div>
+                    <div class="ae-drop-hint">JPG, PNG, WEBP · Max 5 MB</div>
+                </div>
+
+                <div id="preview-wrap">
+                    <img id="preview-img" src="" alt="Preview" />
+                    <div class="preview-name" id="preview-name"></div>
+                </div>
+
+                <button type="submit" class="ae-submit" id="submitBtn">
+                    <i class="fas fa-upload"></i> <span id="btnText">Upload Photo</span>
+                </button>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+const dropZone = document.getElementById('dropZone');
+const imageInput = document.getElementById('imageInput');
+const previewWrap = document.getElementById('preview-wrap');
+const previewImg = document.getElementById('preview-img');
+const previewName = document.getElementById('preview-name');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file) showPreview(file);
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    imageInput.files = dt.files;
+});
+imageInput.addEventListener('change', () => {
+    if (imageInput.files[0]) showPreview(imageInput.files[0]);
+});
+
+function showPreview(file) {
+    const allowed = ['image/jpeg','image/jpg','image/png','image/webp'];
+    if (!allowed.includes(file.type)) { alert('Only JPG, PNG, WEBP files are supported.'); return; }
+    if (file.size > 5 * 1024 * 1024) { alert('File exceeds 5 MB limit.'); return; }
+    previewImg.src = URL.createObjectURL(file);
+    previewName.textContent = file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+    previewWrap.style.display = 'block';
+    
+    // Change drop zone color to indicate successful selection
+    dropZone.style.borderColor = '#eab308';
+    document.querySelector('.ae-drop-icon').style.color = '#eab308';
+}
+
+document.getElementById('uploadForm').addEventListener('submit', () => {
+    const btn = document.getElementById('submitBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> <span>Uploading…</span>';
+});
+</script>
+}

@@ -1,0 +1,122 @@
+@using AgriRent.Web.Services
+@{
+    ViewData["Title"] = "My Profile";
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+
+@section Styles {
+    <style>
+        .profile-header {
+            background: linear-gradient(135deg, #2ecc71, #27ae60);
+            color: white;
+            padding: 40px 0;
+            margin-bottom: 30px;
+        }
+        .profile-card {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            background: white;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 3rem;
+            color: #2ecc71;
+            margin: 0 auto 20px;
+        }
+        .info-row {
+            padding: 15px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+        .info-row:last-child {
+            border-bottom: none;
+        }
+        .info-label {
+            font-weight: 600;
+            color: #7f8c8d;
+            margin-bottom: 5px;
+        }
+        .info-value {
+            font-size: 1.1rem;
+            color: #2c3e50;
+        }
+    </style>
+}
+
+<div class="profile-header">
+    <div class="container text-center">
+        <div class="profile-avatar">
+            <i class="fas fa-user"></i>
+        </div>
+        <h2>@ViewBag.DisplayName</h2>
+        <p class="mb-0"><i class="fas fa-phone me-2"></i>@ViewBag.MobileNumber</p>
+    </div>
+</div>
+
+<div class="container pb-5">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            @if (!string.IsNullOrEmpty(ViewBag.Error))
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @ViewBag.Error
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            <div class="profile-card">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h4><i class="fas fa-user-circle me-2 text-success"></i>@T("PersonalDetails")</h4>
+                    <a href="/Profile/Edit" class="btn btn-success btn-sm">
+                        <i class="fas fa-edit me-1"></i>@T("EditProfile")
+                    </a>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">@T("FullName")</div>
+                    <div class="info-value">@ViewBag.DisplayName</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">@T("Username")</div>
+                    <div class="info-value">@ViewBag.Username</div>
+                </div>
+
+                <div class="info-row">
+                    <div class="info-label">@T("MobileNumber")</div>
+                    <div class="info-value">@ViewBag.MobileNumber</div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(ViewBag.Email))
+                {
+                    <div class="info-row">
+                        <div class="info-label">@T("Email")</div>
+                        <div class="info-value">@ViewBag.Email</div>
+                    </div>
+                }
+
+                <div class="info-row">
+                    <div class="info-label">@T("Role")</div>
+                    <div class="info-value">
+                        <span class="badge bg-success">@ViewBag.Roles</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="profile-card">
+                <h5 class="mb-4"><i class="fas fa-key me-2 text-success"></i>@T("Security")</h5>
+                <a href="/Profile/ChangePassword" class="btn btn-outline-success">
+                    <i class="fas fa-key me-2"></i>@T("ChangePassword")
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

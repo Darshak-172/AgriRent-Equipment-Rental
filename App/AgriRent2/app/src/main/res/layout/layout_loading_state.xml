@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable Loading State Component -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llLoadingState"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:visibility="gone"
+    android:background="@color/bg_main">
+
+    <!-- Loading Spinner -->
+    <com.google.android.material.progressindicator.CircularProgressIndicator
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:indeterminate="true"
+        app:indicatorColor="@color/agri_green"
+        app:trackThickness="4dp" />
+
+    <!-- Loading Text -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_xl"
+        android:text="Loading..."
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.App.Body"
+        android:textColor="@color/text_secondary" />
+</LinearLayout>

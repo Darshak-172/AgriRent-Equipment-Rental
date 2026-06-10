@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Reusable Error State Component -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/llErrorState"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_2xl"
+    android:visibility="gone"
+    android:background="@color/bg_main">
+
+    <!-- Error State Icon -->
+    <ImageView
+        android:id="@+id/ivErrorIcon"
+        android:layout_width="@dimen/empty_state_icon_size"
+        android:layout_height="@dimen/empty_state_icon_size"
+        android:layout_marginBottom="@dimen/spacing_2xl"
+        android:scaleType="centerInside"
+        android:tint="@color/tonal_red_text"
+        app:srcCompat="@drawable/ic_error_outline" />
+
+    <!-- Error State Title -->
+    <TextView
+        android:id="@+id/tvErrorTitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:text="Something went wrong"
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.App.Title"
+        android:textColor="@color/tonal_red_text" />
+
+    <!-- Error State Message -->
+    <TextView
+        android:id="@+id/tvErrorMessage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="@dimen/spacing_2xl"
+        android:text="An error occurred while loading. Please try again."
+        android:textAlignment="center"
+        android:textAppearance="@style/TextAppearance.App.Body"
+        android:textColor="@color/text_secondary" />
+
+    <!-- Error State Retry Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnErrorRetry"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Retry"
+        style="@style/Widget.App.MaterialButton"
+        app:icon="@drawable/ic_refresh" />
+
+    <!-- Error State Secondary Action (optional) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnErrorSecondary"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/spacing_md"
+        android:text="Go Back"
+        android:visibility="gone"
+        style="@style/Widget.App.Button.Secondary" />
+</LinearLayout>

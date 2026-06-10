@@ -1,0 +1,413 @@
+@model IEnumerable<AgriRent.DTOs.SubCategoryDto>
+@{
+    ViewData["Title"] = "Manage Subcategories";
+    Layout = "_AdminLayout";
+
+    // Dynamic Icon Mapping logic based on Category Name (since subcategories usually inherit the theme)
+    string categoryName = (ViewBag.CategoryName as string ?? "leaf").ToLower();
+    string GetSubCatIcon(string catName)
+    {
+        if (catName.Contains("tractor")) return "fa-tractor";
+        if (catName.Contains("plough") || catName.Contains("plow")) return "fa-screwdriver-wrench";
+        if (catName.Contains("sprayer")) return "fa-spray-can-sparkles";
+        if (catName.Contains("seeder") || catName.Contains("seed")) return "fa-seedling";
+        if (catName.Contains("irrigation") || catName.Contains("water")) return "fa-droplet";
+        if (catName.Contains("harvester")) return "fa-wheat-awn";
+        if (catName.Contains("tool")) return "fa-tools";
+        if (catName.Contains("truck") || catName.Contains("vehicle")) return "fa-truck-front";
+        return "fa-leaf";
+    }
+}
+
+<style>
+    /* FIX: Changed from display=swap (render-blocking) to display=optional (non-blocking) */
+    @@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=optional');
+
+    :root {
+        --brand-primary: #12372A;
+        --brand-accent: #D4E157; /* Sidebar lime green */
+        --bg-soft: #f8faf9;
+        --text-primary: #1A1C1E;
+        --text-secondary: #5F6368;
+        --radius-premium: 16px;
+        --shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+    }
+
+    body {
+        background-color: var(--bg-soft);
+        font-family: 'Inter', sans-serif;
+        color: var(--text-primary);
+    }
+
+    .premium-container {
+        padding: 30px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: var(--text-secondary);
+        text-decoration: none;
+        font-weight: 600;
+        margin-bottom: 25px;
+        transition: all 0.2s;
+        font-size: 0.95rem;
+    }
+
+    .back-link:hover {
+        color: var(--brand-primary);
+        transform: translateX(-5px);
+    }
+
+    /* Header */
+    .header-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 35px;
+    }
+
+    .header-content h1 {
+        font-size: 2.2rem;
+        font-weight: 800;
+        color: var(--brand-primary);
+        margin: 0;
+        letter-spacing: -0.8px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .category-badge {
+        background: var(--brand-accent);
+        color: var(--brand-primary);
+        padding: 5px 16px;
+        border-radius: 12px;
+        font-size: 0.9rem;
+        font-weight: 700;
+        box-shadow: 0 4px 10px rgba(212, 225, 87, 0.2);
+    }
+
+    .header-content p {
+        color: var(--text-secondary);
+        margin: 5px 0 0 0;
+        font-weight: 500;
+        font-size: 1.05rem;
+    }
+
+    .btn-add-premium {
+        background: var(--brand-primary);
+        color: var(--brand-accent);
+        padding: 14px 28px;
+        border-radius: 12px;
+        font-weight: 700;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 8px 20px rgba(18, 55, 42, 0.15);
+    }
+
+    .btn-add-premium:hover {
+        background: #1e4d3c;
+        transform: translateY(-3px);
+        box-shadow: 0 12px 25px rgba(18, 55, 42, 0.25);
+        color: var(--brand-accent);
+    }
+
+    /* Table Styling */
+    .table-card {
+        background: white;
+        border-radius: var(--radius-premium);
+        box-shadow: var(--shadow-soft);
+        overflow: hidden;
+        border: 1px solid rgba(0,0,0,0.04);
+    }
+
+    .premium-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 0;
+    }
+
+    .premium-table th {
+        background: #fcfdfc;
+        padding: 22px 20px;
+        text-align: left;
+        font-size: 0.8rem;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: 1.2px;
+        color: var(--text-secondary);
+        border-bottom: 2px solid #f0f2f0;
+    }
+
+    .premium-table td {
+        padding: 20px;
+        vertical-align: middle;
+        border-bottom: 1px solid #f1f3f1;
+        font-size: 0.95rem;
+    }
+
+    .premium-table tr:last-child td {
+        border-bottom: none;
+    }
+
+    .premium-table tr:hover {
+        background-color: #f9fbf9;
+    }
+
+    /* Subcategory Icon Box */
+    .icon-box {
+        width: 48px;
+        height: 48px;
+        background: rgba(18, 55, 42, 0.05);
+        color: var(--brand-primary);
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.3rem;
+        transition: all 0.3s ease;
+    }
+
+    tr:hover .icon-box {
+        transform: scale(1.1) rotate(5deg);
+        background: var(--brand-accent);
+        color: var(--brand-primary);
+    }
+
+    /* Power Button Toggle */
+    .status-toggle-form {
+        margin: 0;
+        display: inline-block;
+    }
+
+    .power-btn {
+        width: 44px;
+        height: 44px;
+        border-radius: 14px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.2rem;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        cursor: pointer;
+    }
+
+    .power-active {
+        background: #ecfdf5;
+        color: #10b981;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.1);
+    }
+
+    .power-active:hover {
+        background: #10b981;
+        color: white;
+        box-shadow: 0 8px 20px rgba(16, 185, 129, 0.25);
+    }
+
+    .power-inactive {
+        background: #fff1f2;
+        color: #f43f5e;
+        box-shadow: 0 4px 12px rgba(244, 63, 94, 0.1);
+    }
+
+    .power-inactive:hover {
+        background: #f43f5e;
+        color: white;
+        box-shadow: 0 8px 20px rgba(244, 63, 94, 0.25);
+    }
+
+    /* Action Buttons */
+    .actions-flex {
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-table-action {
+        width: 42px;
+        height: 42px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none !important;
+        transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        border: 1px solid transparent;
+        font-size: 1.1rem;
+    }
+
+    .btn-table-edit {
+        background: #f0f9ff;
+        color: #0ea5e9;
+        border: 1px solid #e0f2fe;
+    }
+
+    .btn-table-edit:hover {
+        background: #0ea5e9;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    .btn-table-delete {
+        background: #fff1f2;
+        color: #f43f5e;
+        border: 1px solid #ffe4e6;
+        cursor: pointer;
+    }
+
+    .btn-table-delete:hover {
+        background: #f43f5e;
+        color: white;
+        transform: translateY(-2px);
+    }
+
+    /* Empty State */
+    .empty-row {
+        text-align: center;
+        padding: 100px 20px;
+    }
+
+    .empty-icon {
+        font-size: 4rem;
+        color: #e2e8f0;
+        margin-bottom: 25px;
+        display: block;
+    }
+
+    /* Custom Alert */
+    .premium-alert {
+        border-radius: 16px;
+        border: none;
+        padding: 18px 25px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.04);
+        font-weight: 600;
+    }
+</style>
+
+<div class="premium-container">
+
+    <a href="/AdminCategory" class="back-link">
+        <i class="fa-solid fa-arrow-left-long"></i> Return to Main Categories
+    </a>
+
+    <!-- Header -->
+    <div class="header-row">
+        <div class="header-content">
+            <h1>
+                Subcategories 
+                <span class="category-badge">@ViewBag.CategoryName</span>
+            </h1>
+            <p>Drill-down management for items within this category group.</p>
+        </div>
+        <a href="/AdminCategory/SubCategoryCreate?categoryId=@ViewBag.CategoryId&categoryName=@Uri.EscapeDataString((string)ViewBag.CategoryName)" class="btn-add-premium">
+            <i class="fa-solid fa-plus"></i>
+            New Subcategory
+        </a>
+    </div>
+
+    <!-- Alerts -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success premium-alert alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items: center;">
+                <i class="fa-solid fa-circle-check me-3" style="font-size: 1.2rem;"></i>
+                <span>@TempData["Success"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger premium-alert alert-dismissible fade show mb-4" role="alert">
+            <div class="d-flex align-items: center;">
+                <i class="fa-solid fa-circle-exclamation me-3" style="font-size: 1.2rem;"></i>
+                <span>@TempData["Error"]</span>
+            </div>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <!-- Table Card -->
+    <div class="table-card">
+        <table class="premium-table">
+            <thead>
+                <tr>
+                    <th style="width: 100px;">Icon</th>
+                    <th>Subcategory Label</th>
+                    <th style="width: 130px;">Toggle Status</th>
+                    <th class="text-end">Options</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        var isActive = item.Status == "Active";
+                        
+                        <tr>
+                            <td>
+                                <div class="icon-box">
+                                    <i class="fa-solid @GetSubCatIcon(categoryName)"></i>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 700; font-size: 1.1rem; color: var(--brand-primary); letter-spacing: -0.2px;">@item.SubCategoryName</div>
+                                <div style="font-size: 0.8rem; color: var(--text-secondary); margin-top: 3px; font-weight: 500;">SUB-ID: #@item.SubCategoryId</div>
+                            </td>
+                            <td>
+                                <form asp-action="SubCategoryToggleStatus" asp-route-id="@item.SubCategoryId" asp-route-categoryId="@ViewBag.CategoryId" method="post" class="status-toggle-form">
+                                    <button type="submit" class="power-btn @(isActive ? "power-active" : "power-inactive")" 
+                                            title="Click to toggle status (Current: @item.Status)">
+                                        <i class="fa-solid fa-power-off"></i>
+                                    </button>
+                                </form>
+                            </td>
+                            <td>
+                                <div class="actions-flex">
+                                    <a href="/AdminCategory/SubCategoryEdit?id=@item.SubCategoryId&categoryId=@ViewBag.CategoryId&categoryName=@Uri.EscapeDataString((string)ViewBag.CategoryName)" class="btn-table-action btn-table-edit" title="Modify Settings">
+                                        <i class="fa-solid fa-marker"></i>
+                                    </a>
+                                    
+                                    <form action="/AdminCategory/SubCategoryDelete/@item.SubCategoryId" method="post" class="m-0">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="categoryId" value="@ViewBag.CategoryId" />
+                                        <input type="hidden" name="subCategoryName" value="@item.SubCategoryName" />
+                                        <button type="submit" class="btn-table-action btn-table-delete" title="Remove"
+                                                onclick="return confirm('WARNING: Are you sure you want to delete @item.SubCategoryName? This will fail if there are any products or equipments linked to it.')">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="4">
+                            <div class="empty-row">
+                                <i class="fa-solid fa-folder-closed empty-icon"></i>
+                                <h3 style="color: var(--brand-primary); font-weight: 800; font-size: 1.5rem;">No Sub-Items Found</h3>
+                                <p style="color: var(--text-secondary); max-width: 400px; margin: 10px auto;">This category category is currently empty. Add your first subcategory below.</p>
+                                <a href="/AdminCategory/SubCategoryCreate?categoryId=@ViewBag.CategoryId&categoryName=@Uri.EscapeDataString((string)ViewBag.CategoryName)" 
+                                   class="btn-add-premium d-inline-flex mt-4" style="margin: 0 auto; background: var(--brand-accent); color: var(--brand-primary);">
+                                    <i class="fa-solid fa-plus"></i>
+                                    Add New Sub-Item
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+</div>

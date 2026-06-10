@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:state_checked="true" android:color="@android:color/white" />
+    <item android:color="@color/text_secondary" />
+    <!-- Basic Colors -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+
+    <!-- Missing Colors identified in error -->
+    <color name="bg_light">#F3F4F6</color> <!-- Light gray background -->
+    <color name="primary">#2E7D32</color>  <!-- Your app's main green -->
+    <color name="text_primary">#111827</color> <!-- Dark gray/black for text -->
+    <color name="text_secondary">#6B7280</color>
+</selector>

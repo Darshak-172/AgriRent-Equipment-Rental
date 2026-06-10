@@ -1,0 +1,11 @@
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\AgriRent.Web.exe
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\appsettings.json
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\AgriRent.Web.dll
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\AgriRent.Web.deps.json
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\AgriRent.Web.runtimeconfig.json
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\AgriRent.Web.pdb
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\Microsoft.IdentityModel.Abstractions.dll
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\Microsoft.IdentityModel.JsonWebTokens.dll
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\Microsoft.IdentityModel.Logging.dll
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\Microsoft.IdentityModel.Tokens.dll
+C:\Users\Admin\Desktop\AgriRent\agrirent.web\publish_output\System.IdentityModel.Tokens.Jwt.dll

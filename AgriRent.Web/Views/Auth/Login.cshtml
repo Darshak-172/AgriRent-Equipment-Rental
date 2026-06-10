@@ -1,0 +1,283 @@
+@using AgriRent.Web.Services
+@{
+    ViewData["Title"] = "Login";
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+
+<div class="login-page">
+    <div class="glass-card">
+        <div class="login-header">
+            <picture>
+                <source srcset="~/images/agrirent_logo.png" type="image/png">
+                <img src="~/images/agrirent_logo.png" class="logo" alt="AgriRent Logo" />
+            </picture>
+            <h2>@T("WelcomeBack")</h2>
+            <p>@T("WelcomeSubtext")</p>
+        </div>
+
+        <form id="loginForm" autocomplete="off">
+            <div id="loginError" class="error-message" style="display: none;">
+                <i class="fas fa-exclamation-circle"></i>
+                <span class="error-text"></span>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">@T("MobileNumber")</label>
+                <div class="input-container mobile-input-split">
+                    <i class="fas fa-phone"></i>
+                    <input type="text" value="+91" class="form-input mobile-country-code" readonly />
+                    <input type="tel" id="mobileDigits" class="form-input mobile-digits" placeholder="9876543210" 
+                           maxlength="10" pattern="\d{10}" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateMobileNumber();" 
+                           value="@(Model.MobileNumber?.Length > 3 ? Model.MobileNumber.Substring(3) : "")" required />
+                    <input type="hidden" name="MobileNumber" id="mobileNumber" value="@(Model?.MobileNumber ?? "")" />
+                </div>
+                <small class="text-muted" style="font-size: 11px;">@T("EnterMobileHint")</small>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">@T("Password")</label>
+                <div class="input-container">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="Password" class="form-input" placeholder="••••••••" value="@(Model?.Password ?? "")" required />
+                </div>
+            </div>
+
+            <div class="remember-me-auth">
+                <label class="rm-container">
+                    <input type="checkbox" name="RememberMe" value="true" @(Model?.RememberMe == true ? "checked" : "") />
+                    <span class="rm-checkmark"></span>
+                    <span class="rm-text">@T("RememberMe")</span>
+                </label>
+            </div>
+
+            <button type="submit" class="login-btn">
+                <span>@T("Login")</span>
+                <i class="fas fa-sign-in-alt"></i>
+            </button>
+        </form>
+
+        <div class="form-footer">
+            <p>@T("DontHaveAccount") <a href="/Account/Register">@T("SignUp")</a></p>
+            <p class="mt-2"><a href="/Account/ForgotPassword">@T("ForgotPassword")</a></p>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function updateMobileNumber() {
+            let digits = document.getElementById('mobileDigits').value;
+            // Remove all non-digits
+            digits = digits.replace(/\D/g, '');
+            
+            // Smarter normalization:
+            // If user pasted +91 or 91...
+            if (digits.length > 10) {
+                // If it starts with 91 and has 12 digits, it's a 91-prefixed number
+                if (digits.startsWith('91') && digits.length === 12) {
+                    digits = digits.substring(2);
+                } else {
+                    // Otherwise just take the last 10 characters
+                    digits = digits.slice(-10);
+                }
+            }
+            
+            document.getElementById('mobileNumber').value = '+91' + digits;
+        }
+
+        // 🛡️ Client-side guard: Prevent seeing the login page via browser history (Back button)
+        function checkAuthRedirect() {
+            if (localStorage.getItem("isLoggedIn") === "true") {
+                window.location.replace("/Home/Index");
+            }
+        }
+
+        // Run immediately on script execution
+        checkAuthRedirect();
+
+        // Handle Back/Forward Cache (BFCache)
+        window.addEventListener('pageshow', function (event) {
+            checkAuthRedirect();
+        });
+        
+        $(document).ready(function () {
+            $('body').addClass('auth-body');
+            
+            // Initialize mobile number on page load
+            updateMobileNumber();
+            
+            // If mobile number was pre-filled from cookie, format it properly
+            if (document.getElementById('mobileNumber').value) {
+                updateMobileNumber();
+            }
+
+            // AJAX Login Submission
+            $('#loginForm').on('submit', function (e) {
+                e.preventDefault();
+                
+                const $btn = $(this).find('.login-btn');
+                const $error = $('#loginError');
+                
+                // Show global loader
+                const loader = document.getElementById('globalPageLoader');
+                if (loader) {
+                    loader.classList.remove('fade-out', 'hidden');
+                    document.body.classList.add('loading');
+                }
+                
+                $error.hide();
+                $btn.prop('disabled', true);
+
+                $.ajax({
+                    url: '/Account/Login',
+                    type: 'POST',
+                    data: $(this).serialize(),
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    success: function (response) {
+                        if (response.success) {
+                            // 🔒 Set marker before redirect
+                            localStorage.setItem("isLoggedIn", "true");
+                            
+                            // 🚀 Remove login page from history stack
+                            window.location.replace(response.redirectUrl);
+                        } else {
+                            // Hide loader on error
+                            if (loader) {
+                                loader.classList.add('fade-out');
+                                document.body.classList.remove('loading');
+                            }
+                            
+                            $error.find('.error-text').text(response.message);
+                            $error.fadeIn();
+                            $btn.prop('disabled', false);
+                        }
+                    },
+                    error: function () {
+                        if (loader) {
+                            loader.classList.add('fade-out');
+                            document.body.classList.remove('loading');
+                        }
+                        
+                        $error.find('.error-text').text("An unexpected error occurred.");
+                        $error.fadeIn();
+                        $btn.prop('disabled', false);
+                    }
+                });
+            });
+
+            // Double confirmation from server-side session
+            @if (Context.Session.GetString("UserId") != null) {
+                <text>
+                localStorage.setItem("isLoggedIn", "true");
+                checkAuthRedirect();
+                </text>
+            }
+        });
+    </script>
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/modern-login.css" />
+    <style>
+        /* Hide Global Layout Elements for Pure Login View */
+        .navbar, .footer, header { display: none !important; }
+        main { padding-top: 0 !important; margin-top: 0 !important; }
+
+        /* Custom Checkbox Styling for Auth Pages - Glassmorphism Type */
+        .remember-me-auth {
+            margin: 15px 0 20px 0;
+            display: flex;
+            justify-content: flex-start;
+        }
+
+        .rm-container {
+            display: flex;
+            align-items: center;
+            position: relative;
+            padding-left: 32px;
+            cursor: pointer;
+            font-size: 14px;
+            color: var(--text-main);
+            font-weight: 500;
+            user-select: none;
+            transition: all 0.3s ease;
+            min-height: 24px;
+        }
+
+        .rm-container:hover {
+            color: var(--primary-green);
+        }
+
+        .rm-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .rm-checkmark {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            height: 22px;
+            width: 22px;
+            background: rgba(255, 255, 255, 0.4);
+            backdrop-filter: blur(5px);
+            -webkit-backdrop-filter: blur(5px);
+            border: 1.5px solid rgba(0, 0, 0, 0.1);
+            border-radius: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .rm-container:hover input ~ .rm-checkmark {
+            border-color: var(--primary-green);
+            background: rgba(255, 255, 255, 0.6);
+        }
+
+        .rm-container input:checked ~ .rm-checkmark {
+            background-color: var(--primary-green);
+            border-color: var(--primary-green);
+            box-shadow: 0 4px 12px rgba(22, 163, 74, 0.35);
+        }
+
+        .rm-checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 7px;
+            top: 3px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .rm-container input:checked ~ .rm-checkmark:after {
+            display: block;
+        }
+
+        .rm-text {
+            margin-left: 4px;
+        }
+
+        /* Footer Polish */
+        .form-footer p {
+            margin-bottom: 8px;
+        }
+        
+        .form-footer a {
+            transition: all 0.2s ease;
+        }
+        
+        .form-footer a:hover {
+            color: var(--primary-dark);
+            text-shadow: 0 0 1px rgba(22, 163, 74, 0.2);
+        }
+    </style>
+}

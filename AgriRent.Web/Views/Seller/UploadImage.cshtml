@@ -1,0 +1,175 @@
+@{
+    Layout = "_SellerLayout";
+    ViewData["Title"] = "Manage Product Photos – AgriRent";
+    int equipmentId = ViewBag.ProductId ?? 0;
+}
+
+@section Styles {
+    <style>
+        .ae-wrap { max-width: 700px; margin: 0 auto; padding-bottom: 60px; }
+        .ae-card { background: #fff; border-radius: 24px; box-shadow: 0 4px 24px rgba(0,0,0,.04); overflow: hidden; border: 1px solid rgba(0,0,0,0.05); }
+
+        .ae-card-header {
+            background: linear-gradient(135deg, #020617 0%, #0f172a 100%);
+            padding: 36px 40px; color: #fff; position: relative; overflow: hidden;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .ae-card-header .header-text h2 { font-family: 'Outfit', sans-serif; font-size: 26px; font-weight: 800; margin: 0 0 6px; position: z-index: 1; }
+        .ae-bg-shape { position: absolute; width: 150px; height: 150px; background: #f59e0b; filter: blur(40px); opacity: 0.3; border-radius: 50%; right: -20px; top: -50px; }
+
+        .ae-card-body { padding: 40px; }
+
+        .ref-badge {
+            display: inline-flex; align-items: center; gap: 8px; background: #f8fafc; border: 1px solid #e2e8f0;
+            padding: 10px 16px; border-radius: 12px; font-size: 14px; color: #475569; margin-bottom: 24px;
+        }
+
+        .ae-drop {
+            border: 2px dashed #cbd5e1; border-radius: 16px; padding: 40px 24px;
+            text-align: center; cursor: pointer; transition: all .25s; background: #f8fafc;
+            position: relative; margin-bottom: 20px;
+        }
+        .ae-drop.drag-over { border-color: #f59e0b; background: #fffbeb; }
+        .ae-drop input[type=file] { position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%; }
+        .ae-drop-icon { font-size: 36px; color: #94a3b8; margin-bottom: 12px; transition: 0.2s; }
+        .ae-drop:hover .ae-drop-icon { color: #f59e0b; transform: translateY(-4px); }
+        .ae-drop-title { font-size: 16px; font-weight: 700; color: #334155; margin-bottom: 4px; }
+        .ae-drop-hint  { margin-top: 12px; font-size: 12px; color: #cbd5e1; font-weight: 600; }
+
+        /* Preview grid */
+        #img-preview { display: flex; flex-wrap: wrap; gap: 12px; }
+        .ae-thumb {
+            width: 120px; height: 120px; border-radius: 12px; object-fit: cover;
+            border: 2px solid #e2e8f0; box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+        .ae-thumb-wrap { position: relative; display: inline-block; animation: scaleIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        .ae-thumb-del {
+            position: absolute; top: -8px; right: -8px;
+            background: #ef4444; color: #fff; border: none; border-radius: 50%;
+            width: 24px; height: 24px; font-size: 12px; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; line-height: 1; box-shadow: 0 2px 8px rgba(239, 68, 68, 0.4);
+            transition: 0.2s;
+        }
+        .ae-thumb-del:hover { transform: scale(1.1); background: #dc2626; }
+
+        .ae-actions { display: flex; gap: 16px; margin-top: 32px; }
+        .ae-submit {
+            flex: 1; padding: 16px; background: #f59e0b; color: #fff; border: none; border-radius: 14px;
+            font-size: 16px; font-weight: 800; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px;
+            transition: all .2s; box-shadow: 0 8px 20px rgba(245,158,11,0.3);
+        }
+        .ae-submit:hover { transform: translateY(-2px); box-shadow: 0 12px 24px rgba(245,158,11,0.4); background: #d97706; }
+        .ae-submit:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; background: #94a3b8; }
+        .ae-btn-cancel {
+            padding: 16px 24px; background: #f1f5f9; color: #475569; border-radius: 14px;
+            font-size: 16px; font-weight: 700; text-decoration: none; transition: 0.2s;
+        }
+        .ae-btn-cancel:hover { background: #e2e8f0; color: #0f172a; }
+
+        @@keyframes scaleIn { from { transform: scale(0.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    </style>
+}
+
+<div class="od-header">
+    <h1 class="page-title"><i class="fas fa-camera text-yellow-500"></i> Manage Photos</h1>
+</div>
+
+<div class="ae-wrap animate-fade-in">
+    <div class="ae-card">
+        <div class="ae-card-header">
+            <div class="ae-bg-shape"></div>
+            <div class="header-text">
+                <h2>Upload Product Image</h2>
+            </div>
+        </div>
+
+        <div class="ae-card-body">
+            @if (TempData["Error"] != null)
+            {
+                <div class="od-alert od-alert-error mb-4"><i class="fas fa-exclamation-triangle"></i> @TempData["Error"]</div>
+            }
+
+            <div class="ref-badge">
+                <i class="fas fa-hashtag text-yellow-500"></i> Product Ref: <strong>@equipmentId</strong>
+            </div>
+
+            <form method="post" enctype="multipart/form-data" action="/Seller/UploadImage" id="uploadForm">
+                @Html.AntiForgeryToken()
+                <input type="hidden" name="productId" value="@equipmentId" />
+
+                <div class="ae-drop" id="dropZone">
+                    <input type="file" name="image" id="imageInput" accept=".jpg,.jpeg,.png,.webp" />
+                    <div class="ae-drop-icon"><i class="fas fa-cloud-upload-alt"></i></div>
+                    <div class="ae-drop-title">Select a photo to append</div>
+                    <div class="ae-drop-hint">JPG, PNG, WEBP · Max 5 MB</div>
+                </div>
+
+                <div id="img-preview"></div>
+
+                <div class="ae-actions">
+                    <a href="/Seller/Dashboard" class="ae-btn-cancel">
+                        <i class="fas fa-arrow-left"></i> Back
+                    </a>
+                    <button type="submit" class="ae-submit" id="saveBtn" disabled>
+                        <i class="fas fa-upload"></i> Upload Image
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script>
+    const dropZone = document.getElementById('dropZone');
+    const imageInput = document.getElementById('imageInput');
+    const preview = document.getElementById('img-preview');
+    const saveBtn = document.getElementById('saveBtn');
+    let selFile = null;
+
+    dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+    dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+    dropZone.addEventListener('drop', e => {
+        e.preventDefault(); dropZone.classList.remove('drag-over');
+        if (e.dataTransfer.files.length) handleFile(e.dataTransfer.files[0]);
+    });
+    imageInput.addEventListener('change', () => {
+        if (imageInput.files.length) handleFile(imageInput.files[0]);
+    });
+
+    function handleFile(f) {
+        if (!['image/jpeg','image/jpg','image/png','image/webp'].includes(f.type)) return;
+        if (f.size > 5 * 1024 * 1024) { alert('File exceeds 5 MB limit'); return; }
+        
+        selFile = f;
+        const dt = new DataTransfer(); dt.items.add(f);
+        imageInput.files = dt.files;
+
+        // Render preview
+        preview.innerHTML = '';
+        const wrap = document.createElement('div');
+        wrap.className = 'ae-thumb-wrap';
+        const img = document.createElement('img');
+        img.className = 'ae-thumb';
+        img.src = URL.createObjectURL(f);
+        const del = document.createElement('button');
+        del.type = 'button'; del.className = 'ae-thumb-del'; del.innerHTML = '<i class="fas fa-times"></i>';
+        del.onclick = (e) => { 
+            e.preventDefault(); 
+            selFile = null; 
+            imageInput.value = ''; 
+            preview.innerHTML = ''; 
+            saveBtn.disabled = true; 
+        };
+        wrap.appendChild(img); wrap.appendChild(del); preview.appendChild(wrap);
+        
+        saveBtn.disabled = false;
+    }
+
+    document.getElementById('uploadForm').addEventListener('submit', function() {
+        if(!selFile) return false;
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i> Uploading...';
+    });
+</script>
+}

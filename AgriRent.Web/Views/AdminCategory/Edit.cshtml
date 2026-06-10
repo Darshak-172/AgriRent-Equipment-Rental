@@ -1,0 +1,183 @@
+@model AgriRent.DTOs.CategoryDto
+@{
+    ViewData["Title"] = "Edit Category";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    /* We reuse the exact same premium styles as Create */
+    :root {
+        --primary-accent: #0284c7;  /* Different color for Edit mode to distinguish it visually */
+        --primary-accent-hover: #0369a1;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+    }
+
+    .form-container-premium {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: color 0.2s;
+    }
+
+    .back-link:hover {
+        color: var(--primary-accent);
+    }
+
+    .premium-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    }
+
+    .premium-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .premium-header-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #38bdf8, #0284c7);
+        color: white;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 15px rgba(2, 132, 199, 0.3);
+    }
+
+    .premium-header h3 {
+        margin: 0;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .premium-input-group {
+        margin-bottom: 25px;
+    }
+
+    .premium-label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .premium-control {
+        width: 100%;
+        padding: 14px 20px;
+        background-color: var(--input-bg);
+        border: 2px solid var(--input-border);
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
+
+    .premium-control:focus {
+        outline: none;
+        border-color: var(--primary-accent);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+    }
+
+    .btn-submit-premium {
+        background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+        color: white;
+        border: none;
+        padding: 16px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(2, 132, 199, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(2, 132, 199, 0.35);
+    }
+</style>
+
+<div class="form-container-premium">
+    <a href="/AdminCategory" class="back-link">
+        <i class="fa-solid fa-arrow-left-long"></i> Back to Categories
+    </a>
+
+    <div class="premium-card">
+        <div class="premium-header">
+            <div class="premium-header-icon">
+                <i class="fa-solid fa-pen-to-square"></i>
+            </div>
+            <div>
+                <h3>Edit Category</h3>
+                <span style="color: #64748b; font-size: 0.9rem;">Make changes to an existing category</span>
+            </div>
+        </div>
+        
+        <!-- Target matches AdminCategoryController 'Edit' POST method mapped via ID directly to API  -->
+        <form action="/AdminCategory/Edit/@Model.CategoryId" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="CategoryId" value="@Model.CategoryId" />
+            
+            <div class="premium-input-group">
+                <label class="premium-label">Category Name</label>
+                <input type="text" name="Name" value="@Model.Name" class="premium-control" required />
+                <span class="text-danger" style="font-size: 0.85rem; margin-top: 5px; display: block;">@Html.ValidationMessage("Name")</span>
+            </div>
+
+            <div class="premium-input-group">
+                <label class="premium-label">Category Type</label>
+                <select name="Type" class="premium-control">
+                    <option value="Equipment" selected="@(Model.Type == "Equipment")">Equipment (for rental items)</option>
+                    <option value="Product" selected="@(Model.Type == "Product")">Product (for sale items)</option>
+                </select>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Equipment categories appear for owners listing rentals. Product categories appear for sellers listing products.
+                </div>
+            </div>
+
+            <div class="premium-input-group">
+                <label class="premium-label">Visibility Status</label>
+                <select name="Status" class="premium-control">
+                    <option value="Active" selected="@(Model.Status == "Active")">Active</option>
+                    <option value="Inactive" selected="@(Model.Status == "Inactive")">Inactive</option>
+                </select>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Inactive categories will hide all associated products and equipment.
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit-premium">
+                <i class="fa-solid fa-floppy-disk"></i> Save Changes
+            </button>
+        </form>
+    </div>
+</div>

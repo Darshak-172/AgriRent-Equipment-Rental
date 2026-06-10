@@ -1,0 +1,135 @@
+@model AgriRent.DTOs.AdminLoginDto
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <title>AgriRent Admin Login</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <link rel="stylesheet" href="~/css/admin-login.css" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" rel="stylesheet" />
+    <style>
+        /* Custom Checkbox Styling */
+        .remember-me-container {
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+            gap: 12px;
+            margin: 20px 0;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            padding-left: 30px;
+            font-size: 14px;
+            color: #4b5563;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            text-align: left;
+        }
+
+        .remember-me-container:hover {
+            color: #16a34a;
+        }
+
+        .remember-me-container input {
+            position: absolute;
+            opacity: 0;
+            cursor: pointer;
+            height: 0;
+            width: 0;
+        }
+
+        .checkmark {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            transform: translateY(-50%);
+            height: 20px;
+            width: 20px;
+            background-color: #f3f4f6;
+            border: 2px solid #d1d5db;
+            border-radius: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .remember-me-container:hover input ~ .checkmark {
+            border-color: #16a34a;
+            background-color: #f0fdf4;
+        }
+
+        .remember-me-container input:checked ~ .checkmark {
+            background-color: #16a34a;
+            border-color: #16a34a;
+            box-shadow: 0 4px 10px rgba(22, 163, 74, 0.3);
+        }
+
+        .checkmark:after {
+            content: "";
+            position: absolute;
+            display: none;
+            left: 6px;
+            top: 2px;
+            width: 5px;
+            height: 10px;
+            border: solid white;
+            border-width: 0 2px 2px 0;
+            transform: rotate(45deg);
+        }
+
+        .remember-me-container input:checked ~ .checkmark:after {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+
+<div class="login-wrapper">
+
+    <!-- Overlay -->
+    <div class="overlay"></div>
+
+    <!-- Login Card -->
+    <div class="login-card">
+
+        <img src="~/images/agrirent_logo.svg" class="logo" alt="AgriRent Logo" />
+
+        <h2>AgriRent Admin</h2>
+        <p class="subtitle">Secure access to admin dashboard</p>
+
+        <form method="post">
+
+            <div class="input-group">
+                <i class="fa-solid fa-user"></i>
+                <input type="text" name="Username" placeholder="Username" value="@Model?.Username" required />
+            </div>
+
+            <div class="input-group">
+                <i class="fa-solid fa-lock"></i>
+                <input type="password" name="Password" placeholder="Password" value="@Model?.Password" required />
+            </div>
+
+            <label class="remember-me-container">
+                <input type="checkbox" name="RememberMe" value="true" @(Model?.RememberMe == true ? "checked" : "") />
+                <span class="checkmark"></span>
+                Remember Me
+            </label>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="error">@ViewBag.Error</div>
+            }
+
+            <button type="submit">Login</button>
+        </form>
+
+        <span class="footer">© 2026 AgriRent Platform</span>
+    </div>
+
+</div>
+
+</body>
+</html>

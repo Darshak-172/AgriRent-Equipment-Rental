@@ -1,0 +1,290 @@
+@model List<AgriRent.ViewModels.PendingEquipmentViewModel>
+
+@{
+    ViewData["Title"] = "Equipments Approval";
+    Layout = "_AdminLayout";
+}
+
+<link rel="stylesheet" href="~/css/pending-equipments.css" />
+
+<div class="approval-container">
+
+    <div class="header-row">
+        <div>
+            <h2>Equipments Management</h2>
+            @if (ViewBag.TotalItems != null && (int)ViewBag.TotalItems > 0)
+            {
+                <span style="font-size:0.85rem;color:var(--text-secondary);">@ViewBag.TotalItems total items</span>
+            }
+        </div>
+        <div class="d-flex gap-3">
+             <input type="text"
+                   id="searchInput"
+                   class="search-box"
+                   placeholder="Search equipment..." />
+        </div>
+    </div>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar">
+        <a href="/Admin/PendingEquipments?status=Pending"
+           class="filter-btn @(ViewBag.SelectedStatus == "Pending" ? "active" : "")">
+            <i class="fa-regular fa-clock"></i> Pending
+        </a>
+
+        <a href="/Admin/PendingEquipments?status=Active"
+           class="filter-btn @(ViewBag.SelectedStatus == "Active" ? "active" : "")">
+            <i class="fa-regular fa-circle-check"></i> Active
+        </a>
+
+        <a href="/Admin/PendingEquipments?status=Paused"
+           class="filter-btn @(ViewBag.SelectedStatus == "Paused" ? "active" : "")">
+            <i class="fa-solid fa-pause-circle"></i> Paused
+        </a>
+
+        <a href="/Admin/PendingEquipments?status=Rejected"
+           class="filter-btn @(ViewBag.SelectedStatus == "Rejected" ? "active" : "")">
+            <i class="fa-regular fa-circle-xmark"></i> Rejected
+        </a>
+
+        <a href="/Admin/PendingEquipments?status=Blocked"
+           class="filter-btn @(ViewBag.SelectedStatus == "Blocked" ? "active" : "")">
+            <i class="fa-solid fa-ban"></i> Blocked
+        </a>
+
+        <a href="/Admin/PendingEquipments?status=All"
+           class="filter-btn @(ViewBag.SelectedStatus == "All" ? "active" : "")">
+            <i class="fa-solid fa-list"></i> All
+        </a>
+    </div>
+
+    <!-- GRID -->
+    <!-- TABLE VIEW -->
+    <div class="equipments-table-wrap">
+        <table class="table mb-0" id="equipmentTable">
+            <thead>
+                <tr>
+                    <th>Equipment</th>
+                    <th>Price</th>
+                    <th>Owner</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (!Model.Any())
+                {
+                    <tr id="emptyRow">
+                        <td colspan="5">
+                            <div class="empty-state" style="padding: 40px 0;">
+                                <i class="fa-solid fa-tractor empty-icon" style="font-size: 3rem; color: #ccc; margin-bottom: 10px; display: block;"></i>
+                                <h4 style="font-weight: 600; color: var(--text-primary);">No equipments found</h4>
+                                <p style="color: var(--text-secondary);">There are currently no items matching your criteria.</p>
+                            </div>
+                        </td>
+                    </tr>
+                }
+                else
+                {
+                    @foreach (var item in Model)
+                    {
+                        var statusCls = item.Status?.ToLower() == "active"   ? "approved"
+                                      : item.Status?.ToLower() == "rejected"  ? "rejected"
+                                      : item.Status?.ToLower() == "blocked"   ? "blocked"
+                                      : item.Status?.ToLower() == "paused"    ? "paused"
+                                      : "pending";
+                        
+                        var safeOwner = item.OwnerName ?? "Unknown";
+                        var safeMobile = item.OwnerMobile ?? "N/A";
+                        var safeImg = string.IsNullOrEmpty(item.ImageUrl) ? "/images/default-image.svg" : item.ImageUrl;
+
+                        <tr class="equipment-table-row" data-name="@(item.EquipmentName?.ToLower() ?? "")">
+                            <td>
+                                <div class="d-flex align-items-center gap-3">
+                                    <img src="@safeImg" class="equip-img-tb" alt="@item.EquipmentName" onerror="this.onerror=null;this.src='/images/default-image.svg';" />
+                                    <div>
+                                        <div style="font-weight: 600; color: var(--text-primary); font-size: 0.95rem;">@item.EquipmentName</div>
+                                        <div style="font-size: 0.75rem; color: var(--text-secondary);"><i class="fa-solid fa-hashtag"></i> @item.EquipmentId</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: var(--brand-dark, #12372A);">₹@item.Price <span style="font-weight: 400; color: var(--text-secondary); font-size: 0.8rem;">/ @item.PriceType</span></div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 500;">@safeOwner</div>
+                            </td>
+                            <td>
+                                <span class="status-badge @statusCls">@item.Status</span>
+                            </td>
+                            <td class="text-end align-middle">
+                                <div class="d-flex gap-2 justify-content-end align-items-center">
+                                    <button class="btn-view-table" 
+                                            onclick="openModal(this)"
+                                            data-id="@item.EquipmentId"
+                                            data-name="@item.EquipmentName"
+                                            data-desc="@item.Description"
+                                            data-price="@item.Price"
+                                            data-type="@item.PriceType"
+                                            data-loc="@item.Location"
+                                            data-status="@item.Status"
+                                            data-owner="@safeOwner"
+                                            data-mobile="@safeMobile"
+                                            data-img="@safeImg">
+                                        <i class="fa-regular fa-eye"></i> Details
+                                    </button>
+
+                                    @if (item.Status == "Pending")
+                                    {
+                                        <form asp-action="ApproveEquipment" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@item.EquipmentId" />
+                                            <button type="submit" class="btn-action-icon btn-approve" title="Approve">
+                                                <i class="fa-solid fa-check"></i>
+                                            </button>
+                                        </form>
+
+                                        <form asp-action="RejectEquipment" method="post" class="m-0">
+                                            <input type="hidden" name="id" value="@item.EquipmentId" />
+                                            <button type="submit" class="btn-action-icon btn-reject" title="Reject">
+                                                <i class="fa-solid fa-xmark"></i>
+                                            </button>
+                                        </form>
+                                    }
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <!-- PAGINATION -->
+    @{
+        int currentPage = ViewBag.CurrentPage ?? 1;
+        int totalPages  = ViewBag.TotalPages  ?? 1;
+        int totalItems  = ViewBag.TotalItems  ?? 0;
+        string selStatus = ViewBag.SelectedStatus ?? "Pending";
+    }
+    @if (totalPages > 1)
+    {
+        <div class="pagination-bar">
+            @if (currentPage > 1)
+            {
+                <a href="/Admin/PendingEquipments?status=@selStatus&page=@(currentPage-1)" class="page-btn"><i class="fa-solid fa-chevron-left"></i></a>
+            }
+            else
+            {
+                <span class="page-btn disabled"><i class="fa-solid fa-chevron-left"></i></span>
+            }
+
+            @for (int p = Math.Max(1, currentPage - 2); p <= Math.Min(totalPages, currentPage + 2); p++)
+            {
+                if (p == currentPage)
+                {
+                    <span class="page-btn active">@p</span>
+                }
+                else
+                {
+                    <a href="/Admin/PendingEquipments?status=@selStatus&page=@p" class="page-btn">@p</a>
+                }
+            }
+
+            @if (currentPage < totalPages)
+            {
+                <a href="/Admin/PendingEquipments?status=@selStatus&page=@(currentPage+1)" class="page-btn"><i class="fa-solid fa-chevron-right"></i></a>
+            }
+            else
+            {
+                <span class="page-btn disabled"><i class="fa-solid fa-chevron-right"></i></span>
+            }
+        </div>
+    }
+
+</div>
+
+<!-- DETAILS MODAL -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModal()"></div>
+
+<div class="details-modal" id="detailsModal">
+    
+    <div class="modal-header-custom">
+        <h3><i class="fa-solid fa-tractor" style="margin-right: 8px; color: var(--accent-color, #D4E157);"></i> Equipment View</h3>
+        <button class="modal-close" onclick="closeModal()">
+            <i class="fa-solid fa-xmark"></i>
+        </button>
+    </div>
+
+    <div class="modal-body-custom">
+        <div class="row m-0 h-100">
+            <!-- Left Side: Image -->
+            <div class="col-md-5 p-0 modal-image-container">
+                <img src="" id="modalImg" class="modal-image-hero" onerror="this.onerror=null;this.src='/images/default-image.svg'" />
+            </div>
+            
+            <!-- Right Side: Info -->
+            <div class="col-md-7 p-4 modal-info-container">
+                
+                <div class="info-section">
+                    <div class="info-label">Equipment Identity</div>
+                    <div class="info-value" id="modalName" style="font-size: 1.4rem;"></div>
+                    
+                    <div style="margin-top:16px;"></div>
+                    
+                    <div class="info-label">Full Description</div>
+                    <div style="font-size:0.9rem; line-height:1.6; color:#555; max-height: 80px; overflow-y: auto; padding-right: 5px;" id="modalDesc"></div>
+                </div>
+
+                <div class="row">
+                     <div class="col-6">
+                        <div class="info-section h-100 mb-0">
+                            <div class="info-label">Rental Price</div>
+                            <div class="info-value" style="color:var(--brand-dark, #12372A); font-size: 1.3rem;">
+                                ₹<span id="modalPrice"></span> <small id="modalType" style="color:#888; font-size: 0.85rem; font-weight:500;"></small>
+                            </div>
+                        </div>
+                     </div>
+                     <div class="col-6">
+                        <div class="info-section h-100 mb-0 d-flex flex-column justify-content-center">
+                            <div class="info-label">Processing Status</div>
+                            <div id="modalStatus" class="modal-status-badge"></div>
+                        </div>
+                     </div>
+                </div>
+
+                <div class="info-section mt-3">
+                    <div class="info-label">Current Location</div>
+                    <div class="info-value">
+                       <div style="display:inline-flex; align-items:center; justify-content:center; width:32px; height:32px; background:rgba(211,47,47,0.1); border-radius:50%; margin-right:8px;">
+                           <i class="fa-solid fa-map-pin" style="color:#d32f2f; font-size: 0.9rem;"></i>
+                       </div>
+                       <span id="modalLoc"></span>
+                    </div>
+                </div>
+
+                <!-- Display User who booked / owner at the bottom -->
+                <div class="info-section mb-0 mt-3" style="border: none; box-shadow: none; padding: 0;">
+                    <div class="info-label" style="margin-bottom: 12px;">Contact Information</div>
+                    
+                    <div class="modal-owner-row">
+                        <div class="owner-avatar" id="modalOwnerAvatar">A</div>
+                        <div style="flex:1;">
+                            <div class="info-value" id="modalOwner"></div>
+                            <div style="font-size:0.85rem; color:var(--text-secondary); margin-top:2px;">
+                                <i class="fa-solid fa-phone" style="font-size:0.8rem; margin-right:4px;"></i> <span id="modalMobile"></span>
+                            </div>
+                        </div>
+                        <div>
+                            <a id="modalWhatsapp" href="#" target="_blank" class="btn btn-success p-2" style="border-radius: 50%; width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(37,211,102,0.3);">
+                                <i class="fa-brands fa-whatsapp" style="font-size: 1.2rem; color: white;"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="~/js/pending-equipments.js"></script>

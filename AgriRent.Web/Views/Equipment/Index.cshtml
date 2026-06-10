@@ -1,0 +1,72 @@
+@using AgriRent.Web.Services
+@model List<AgriRent.Models.Equipment>
+@{
+    ViewData["Title"] = "Rent Equipment";
+    var userSession = Context.Session.GetString("UserId");
+    bool isLoggedIn = !string.IsNullOrEmpty(userSession);
+    string equipmentLink = isLoggedIn ? "#equipment" : "/Account/Login";
+    
+    var currentLanguage = Context.Session.GetString("Language") ?? "en";
+    string T(string key) => TranslationHelper.Translate(key, currentLanguage);
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/home.css" />
+    <style>
+        .equipment-page-header {
+            /* FIX: Removed external Unsplash image to eliminate external dependency (300-800ms delay) */
+            background: linear-gradient(135deg, rgba(40, 167, 69, 0.9) 0%, rgba(32, 201, 151, 0.9) 100%);
+            background-size: cover;
+            background-position: center;
+            padding: 80px 0;
+            color: white;
+            text-align: center;
+            margin-bottom: 40px;
+            border-radius: 0 0 30px 30px;
+        }
+    </style>
+}
+
+<!-- Header -->
+<div class="equipment-page-header shadow-sm">
+    <div class="container">
+        <h1 class="display-4 fw-bold">@T("RentEquipment")</h1>
+        <p class="lead mb-0">@T("FindWhatYouNeed")</p>
+    </div>
+</div>
+
+<section class="section-padding pt-0">
+    <div class="container">
+        <div class="row g-4">
+            @if (Model != null && Model.Any())
+            {
+                foreach (var item in Model)
+                {
+                    <div class="col-md-6 col-lg-3">
+                        <div class="equipment-card">
+                            <div class="equipment-img-wrapper">
+                                <img src="@(string.IsNullOrEmpty(item.ImageUrl) ? "/images/default-image.svg" : item.ImageUrl)" class="equipment-img" alt="@item.EquipmentName" onerror="this.onerror=null;this.src='/images/default-image.svg'">
+                                <span class="card-badge"><i class="fas fa-star text-warning"></i> 4.5</span>
+                            </div>
+                            <div class="p-3">
+                                <h5 class="fw-bold mb-1">@item.EquipmentName</h5>
+                                <p class="text-muted small mb-2"><i class="fas fa-map-marker-alt me-1"></i> @item.Location</p>
+                                <div class="d-flex justify-content-between align-items-center mt-3">
+                                    <span class="price-tag">₹@item.Price<span class="text-muted fs-6 fw-normal">/@item.PriceType</span></span>
+                                    <a href="@equipmentLink" class="btn btn-sm btn-outline-success rounded-pill">@T("RentNow")</a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="col-12 text-center py-5">
+                    <div class="text-muted fs-4"><i class="fas fa-tractor fa-3x mb-3 text-success opacity-50"></i></div>
+                    <p class="text-muted fs-5">@T("NoEquipmentAvailable")</p>
+                </div>
+            }
+        </div>
+    </div>
+</section>

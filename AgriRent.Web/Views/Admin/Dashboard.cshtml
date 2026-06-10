@@ -1,0 +1,375 @@
+@model AgriRent.ViewModels.AdminDashboardViewModel
+@{
+    ViewData["Title"] = "Dashboard Overview";
+    Layout = "~/Views/Shared/_AdminLayout.cshtml";
+}
+
+@section Styles {
+    <style>
+        .dashboard-canvas {
+            animation: fadeIn 0.6s cubic-bezier(0.2, 0.8, 0.2, 1);
+        }
+        @@keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .action-header {
+            display: flex;
+            justify-content: flex-end;
+            margin-bottom: 2rem;
+        }
+
+        .btn-premium {
+            background: linear-gradient(135deg, var(--brand-accent) 0%, #AED581 100%);
+            color: var(--brand-dark);
+            border: none;
+            padding: 0.85rem 1.75rem;
+            border-radius: var(--radius-pill);
+            font-weight: 700;
+            font-size: 0.95rem;
+            box-shadow: 0 8px 24px rgba(212, 225, 87, 0.3);
+            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            cursor: pointer;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .btn-premium:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 28px rgba(212, 225, 87, 0.5);
+        }
+        .btn-premium:active { transform: translateY(1px); }
+        .btn-premium i { font-size: 1.1rem; }
+
+        .glass-panel {
+            background: #f3f7c8;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.9);
+            border-radius: var(--radius-xl);
+            padding: 28px;
+            box-shadow: var(--shadow-soft);
+            margin-bottom: 30px;
+        }
+
+        .panel-title {
+            font-size: 1.35rem;
+            font-weight: 800;
+            color: var(--brand-dark);
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: -0.3px;
+        }
+        .panel-title i {
+            color: var(--brand-light);
+            background: rgba(255, 255, 255, 0.9);
+            padding: 10px;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(18, 55, 42, 0.05);
+            font-size: 1.1rem;
+        }
+
+        /* Metric Cards */
+        .metric-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: var(--radius-lg);
+            padding: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.03);
+            border: 1px solid rgba(241, 244, 235, 1);
+            position: relative;
+            overflow: hidden;
+            text-decoration: none;
+            color: inherit;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 16px 32px rgba(18, 55, 42, 0.08);
+            border-color: rgba(212, 225, 87, 0.6);
+        }
+
+        .metric-info h4 {
+            font-size: 2.4rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 6px 0;
+            line-height: 1;
+            letter-spacing: -1px;
+        }
+
+        .metric-info span {
+            font-size: 0.85rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+
+        .metric-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.6rem;
+            position: relative;
+            z-index: 2;
+            transition: transform 0.4s ease;
+        }
+
+        .metric-card:hover .metric-icon {
+            transform: scale(1.1) rotate(5deg);
+        }
+
+        /* Blob decoration inside card */
+        .metric-card::after {
+            content: '';
+            position: absolute;
+            top: -20px;
+            right: -20px;
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            z-index: 1;
+            opacity: 0.08;
+            transition: all 0.5s ease;
+        }
+        .metric-card:hover::after {
+            transform: scale(1.6);
+            opacity: 0.15;
+        }
+
+        /* Card Color Variants */
+        .card-blue .metric-icon { background: #E3F2FD; color: #1976D2; }
+        .card-blue::after { background: #1976D2; }
+        
+        .card-green .metric-icon { background: #E8F5E9; color: #2E7D32; }
+        .card-green::after { background: #2E7D32; }
+        
+        .card-orange .metric-icon { background: #FFF3E0; color: #E65100; }
+        .card-orange::after { background: #E65100; }
+        
+        .card-purple .metric-icon { background: #F3E5F5; color: #7B1FA2; }
+        .card-purple::after { background: #7B1FA2; }
+
+        .card-red .metric-icon { background: #FFEBEE; color: #C62828; }
+        .card-red::after { background: #C62828; }
+
+        /* Asset Grid */
+        .asset-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+        }
+        
+        .stat-box {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: blur(8px);
+            border-radius: var(--radius-md);
+            padding: 18px;
+            text-align: center;
+            transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            border: 1px solid rgba(255,255,255,0.9);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.03);
+            text-decoration: none;
+            display: block;
+        }
+        .stat-box:hover {
+            transform: translateY(-4px);
+            background: #ffffff;
+            box-shadow: 0 10px 24px rgba(18, 55, 42, 0.08);
+        }
+
+        .stat-box.success { border-bottom: 4px solid var(--farm-leaf); }
+        .stat-box.warning { border-bottom: 4px solid var(--farm-wheat); }
+        .stat-box.danger { border-bottom: 4px solid var(--farm-alert); }
+
+        .stat-box h5 {
+            font-size: 1.9rem;
+            font-weight: 800;
+            color: var(--text-primary);
+            margin: 0 0 4px 0;
+            line-height: 1;
+        }
+        .stat-box span {
+            font-size: 0.75rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+        }
+
+        @@media (max-width: 992px) {
+            .asset-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+}
+
+<div class="dashboard-canvas">
+    
+    <!-- Action Header -->
+    <div class="action-header">
+        <form asp-action="CheckExpiry" method="post" onsubmit="return confirm('Run subscription expiry check manually?');">
+            <button type="submit" class="btn-premium">
+                <i class="fa-solid fa-arrows-rotate"></i> Sync Expiries
+            </button>
+        </form>
+    </div>
+
+    <!-- COMMUNITY PANEL -->
+    <div class="glass-panel">
+        <h3 class="panel-title"><i class="fa-solid fa-earth-americas"></i> Community & Users</h3>
+        <div class="row g-4">
+            <div class="col-12 col-md-6 col-xl-3">
+                <a href="/Admin/Users" class="metric-card card-blue">
+                    <div class="metric-info">
+                        <h4>@Model.TotalUsers</h4>
+                        <span>Total Users</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-users"></i></div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <a href="/Admin/Users?role=Farmer" class="metric-card card-green">
+                    <div class="metric-info">
+                        <h4>@Model.TotalFarmers</h4>
+                        <span>Farmers</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-wheat-awn"></i></div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <a href="/Admin/Users?role=Owner" class="metric-card card-orange">
+                    <div class="metric-info">
+                        <h4>@Model.TotalEquipmentOwners</h4>
+                        <span>Owners</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-tractor"></i></div>
+                </a>
+            </div>
+            <div class="col-12 col-md-6 col-xl-3">
+                <a href="/Admin/Users?role=Seller" class="metric-card card-purple">
+                    <div class="metric-info">
+                        <h4>@Model.TotalSellers</h4>
+                        <span>Sellers</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-store"></i></div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- PLATFORM ASSETS PANEL -->
+    <div class="asset-grid">
+        <!-- Equipments -->
+        <div class="glass-panel" style="margin-bottom: 0;">
+            <h3 class="panel-title"><i class="fa-solid fa-trailer"></i> Equipment Fleet</h3>
+            <a href="/Admin/PendingEquipments?status=All" class="metric-card card-blue mb-4">
+                <div class="metric-info">
+                    <h4>@Model.TotalEquipments</h4>
+                    <span>Registered Equipments</span>
+                </div>
+                <div class="metric-icon"><i class="fa-solid fa-truck-ramp-box"></i></div>
+            </a>
+            
+            <div class="row g-3">
+                <div class="col-4">
+                    <a href="/Admin/PendingEquipments?status=Active" class="stat-box success">
+                        <h5>@Model.ActiveEquipments</h5>
+                        <span>Active</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="/Admin/PendingEquipments?status=Pending" class="stat-box warning">
+                        <h5>@Model.PendingEquipments</h5>
+                        <span>Pending</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="/Admin/PendingEquipments?status=Rejected" class="stat-box danger">
+                        <h5>@Model.RejectedEquipments</h5>
+                        <span>Rejected</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <!-- Products -->
+        <div class="glass-panel" style="margin-bottom: 0;">
+            <h3 class="panel-title"><i class="fa-solid fa-boxes-stacked"></i> Product Inventory</h3>
+            <a href="/Admin/PendingProducts?status=All" class="metric-card card-purple mb-4">
+                <div class="metric-info">
+                    <h4>@Model.TotalProducts</h4>
+                    <span>Listed Products</span>
+                </div>
+                <div class="metric-icon"><i class="fa-solid fa-box-open"></i></div>
+            </a>
+            
+            <div class="row g-3">
+                <div class="col-4">
+                    <a href="/Admin/PendingProducts?status=Active" class="stat-box success">
+                        <h5>@Model.ActiveProducts</h5>
+                        <span>Active</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="/Admin/PendingProducts?status=Pending" class="stat-box warning">
+                        <h5>@Model.PendingProducts</h5>
+                        <span>Pending</span>
+                    </a>
+                </div>
+                <div class="col-4">
+                    <a href="/Admin/PendingProducts?status=Rejected" class="stat-box danger">
+                        <h5>@Model.RejectedProducts</h5>
+                        <span>Rejected</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MONETIZATION & ENGAGEMENT PANEL -->
+    <div class="glass-panel mt-4">
+        <h3 class="panel-title"><i class="fa-solid fa-chart-line"></i> Monetization & Engagement</h3>
+        <div class="row g-4">
+            <div class="col-12 col-md-4">
+                <a href="/Admin/Subscriptions?status=Active" class="metric-card card-green">
+                    <div class="metric-info">
+                        <h4>@Model.ActiveSubscriptions</h4>
+                        <span>Active Subs</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-money-bill-trend-up"></i></div>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="/Admin/Complaints?status=Pending" class="metric-card card-orange">
+                    <div class="metric-info">
+                        <h4>@Model.PendingComplaints</h4>
+                        <span>Pending Cases</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-scale-unbalanced"></i></div>
+                </a>
+            </div>
+            <div class="col-12 col-md-4">
+                <a href="/Admin/Reviews" class="metric-card card-blue">
+                    <div class="metric-info">
+                        <h4>@Model.TotalReviews</h4>
+                        <span>Platform Reviews</span>
+                    </div>
+                    <div class="metric-icon"><i class="fa-solid fa-star"></i></div>
+                </a>
+            </div>
+        </div>
+    </div>
+
+</div>

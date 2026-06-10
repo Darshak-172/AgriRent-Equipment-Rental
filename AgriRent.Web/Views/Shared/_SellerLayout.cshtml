@@ -1,0 +1,128 @@
+@{
+    var sellerName = Context.Session.GetString("DisplayName") ?? "Seller";
+    char initial = sellerName.Length > 0 ? char.ToUpper(sellerName[0]) : 'S';
+    string firstName = sellerName.Split(' ')[0];
+
+    // Grab counts if they were set by the Dashboard view, otherwise default to 0
+    int pendingCount = ViewData["PendingCount"] as int? ?? 0;
+    int pendingOrders = ViewData["PendingOrders"] as int? ?? 0;
+
+    // Get current path to highlight active nav
+    var currentPath = Context.Request.Path.Value?.ToLower() ?? "";
+    bool isDashboard = currentPath.Contains("/dashboard") && !currentPath.Contains("addproduct") && !currentPath.Contains("updateproduct") && !currentPath.Contains("uploadimage");
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"]</title>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <!-- FIX: Changed from display=swap (render-blocking) to display=optional (non-blocking) -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=optional" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+    <link rel="stylesheet" href="~/css/owner-dashboard.css" />
+    <style>
+        /* ── SELLER AMBER/ORANGE THEME OVERRIDES ── */
+        .logo-icon-wrap { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%) !important; }
+        .od-nav-item.active { background: #fffbeb !important; border-left-color: #f59e0b !important; color: #d97706 !important; }
+        .od-nav-item.active .nav-icon { color: #f59e0b !important; }
+        .btn-new-equipment { background: #f59e0b !important; box-shadow: 0 4px 12px rgba(245,158,11,0.2) !important; }
+        .btn-new-equipment:hover { background: #d97706 !important; }
+        .sub-bg-shape { background: #f59e0b !important; }
+        .glow-green { background: #f59e0b !important; }
+        .ic-green { background: #f59e0b !important; color: #fff !important; }
+        .od-nav-item { color: #64748b; }
+        .od-nav-item:hover { background: #fffbeb !important; color: #d97706; }
+        .nav-badge { background: #fef3c7 !important; color: #d97706 !important; }
+        
+        /* Seller specific icon colors */
+        .text-emerald-500 { color: #f59e0b !important; }
+        .bc-icon.ic-black { color: #d97706; background: #fffbeb; }
+    </style>
+    @await RenderSectionAsync("Styles", required: false)
+</head>
+<body>
+<div class="owner-dashboard-root">
+
+    <!-- ══ SHARED SIDEBAR NAVIGATION ══ -->
+    <aside class="od-sidebar">
+        <div class="od-sidebar-logo">
+            <div class="logo-icon-wrap"><i class="fas fa-shop"></i></div>
+            <div class="logo-text-wrap">
+                <span class="logo-title">AgriRent</span>
+                <span class="logo-sub">Seller Portal</span>
+            </div>
+        </div>
+
+        <nav class="od-nav">
+            <a href="/Profile" class="od-sidebar-user" style="text-decoration: none; color: inherit; display: flex; margin-bottom:24px; transition: all 0.2s;">
+                <div class="user-avatar" style="background:#fef3c7;color:#d97706;">@initial</div>
+                <div class="user-info">
+                    <div class="user-name">@sellerName</div>
+                    <div class="user-role">Verified Seller</div>
+                </div>
+            </a>
+
+            <div class="nav-label">Main Menu</div>
+            <a href="/Seller/Dashboard" class="od-nav-item @(isDashboard ? "active" : "")">
+                <i class="fas fa-chart-pie nav-icon"></i> Dashboard
+            </a>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('products',this);return false; }">
+                <i class="fas fa-box-open nav-icon"></i> My Products
+                @if (pendingCount > 0) { <span class="nav-badge">@pendingCount</span> }
+            </a>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('orders',this);return false; }">
+                <i class="fas fa-shopping-bag nav-icon"></i> Orders
+                @if (pendingOrders > 0) { <span class="nav-badge text-white" style="background:#ef4444;">@pendingOrders</span> }
+            </a>
+
+            <div class="nav-label mt-4">Feedback & Support</div>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('my-complaints',this);return false; }">
+                <i class="fas fa-comment-dots nav-icon"></i> My Complaints
+            </a>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('incoming-complaints',this);return false; }">
+                <i class="fas fa-shield-alt nav-icon"></i> Complaint Manager
+            </a>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('my-reviews',this);return false; }">
+                <i class="fas fa-star nav-icon"></i> My Reviews
+            </a>
+            <a href="/Seller/Dashboard" class="od-nav-item" onclick="if(window.switchSection) { switchSection('incoming-reviews',this);return false; }">
+                <i class="fas fa-star-half-alt nav-icon"></i> Review Manager
+            </a>
+
+            <div class="nav-label mt-4">Manage</div>
+            <a href="/Seller/AddProduct" class="od-nav-item @(currentPath.Contains("addproduct") ? "active" : "")">
+                <i class="fas fa-plus-circle nav-icon"></i> Add Product
+            </a>
+
+            <div class="nav-label mt-4">Account</div>
+            <a href="/Profile" class="od-nav-item @(currentPath == "/profile" ? "active" : "")">
+                <i class="far fa-user-circle nav-icon"></i> My Profile
+            </a>
+            <a href="/Subscription" class="od-nav-item">
+                <i class="fas fa-crown nav-icon"></i> Subscription
+            </a>
+            <a href="/" class="od-nav-item">
+                <i class="fas fa-home nav-icon"></i> Back to Home
+            </a>
+            <a href="/Account/Logout" class="od-nav-item text-danger mt-2">
+                <i class="fas fa-sign-out-alt nav-icon"></i> Sign Out
+            </a>
+        </nav>
+    </aside>
+
+    <!-- ══ MAIN DASHBOARD CONTENT ══ -->
+    <main class="od-main">
+        <div class="od-content-wrapper">
+            @RenderBody()
+        </div>
+    </main>
+
+</div>
+
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

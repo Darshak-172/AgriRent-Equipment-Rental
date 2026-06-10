@@ -1,0 +1,670 @@
+@model List<AgriRent.ViewModels.UserAdminViewModel>
+@{
+    ViewData["Title"] = "User Management";
+    Layout = "_AdminLayout";
+    var selectedRole   = ViewBag.SelectedRole as string;
+    var selectedStatus = ViewBag.SelectedStatus as string;
+    var searchQuery    = ViewBag.SearchQuery as string;
+    int total          = (int)(ViewBag.Total ?? (object)0);
+
+    // Helpers for active class logic
+    bool isAllTab     = selectedRole == null;
+    bool isFarmerTab  = selectedRole == "Farmer";
+    bool isOwnerTab   = selectedRole == "Owner";
+    bool isSellerTab  = selectedRole == "Seller";
+}
+
+@section Styles {
+    <style>
+        /* =============================================
+           PREMIUM USERS PAGE – "Yourland" Theme
+        ============================================= */
+
+        /* ── HEADER & SEARCH FLOATER ── */
+        .users-header-container {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 2.5rem;
+            flex-wrap: wrap;
+            gap: 1.5rem;
+        }
+
+        .users-title-block h2 { font-size: 2rem; font-weight: 800; color: var(--text-primary); margin: 0; display: flex; align-items: center; gap: 12px; }
+        .users-title-block h2 i { color: #d3e058; font-size: 1.8rem; filter: drop-shadow(0 2px 10px rgba(211, 224, 88, 0.4)); }
+        .users-title-block p { font-size: 1rem; color: var(--text-secondary); margin: 4px 0 0; }
+
+        .search-wrap {
+            position: relative;
+            width: 400px;
+            max-width: 100%;
+            z-index: 10;
+        }
+        .search-wrap i.fa-magnifying-glass { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: var(--text-secondary); font-size: 1.1rem; }
+        .search-input {
+            width: 100%; padding: 16px 50px; border-radius: var(--radius-pill); border: 2px solid transparent;
+            background: var(--bg-white); box-shadow: var(--shadow-card);
+            font-size: 1rem; font-family: 'Outfit', sans-serif; color: var(--text-primary); transition: all 0.4s ease;
+        }
+        .search-input:focus { outline: none; border-color: #d3e058; box-shadow: 0 10px 30px rgba(211, 224, 88, 0.2); transform: translateY(-2px); }
+        .search-loader { position: absolute; right: 20px; top: 50%; transform: translateY(-50%); display: none; color: #d3e058; animation: spin .8s linear infinite; }
+        .search-loader.active { display: block; }
+        @@keyframes spin { to { transform: translateY(-50%) rotate(360deg); } }
+
+        /* ── ROLE TABS ── */
+        .role-tabs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 1.5rem;
+        }
+        .role-tab {
+            display: flex; align-items: center; gap: 10px; padding: 12px 22px;
+            border-radius: var(--radius-pill);
+            background: var(--bg-white); border: 1.5px solid rgba(0,0,0,0.07); box-shadow: var(--shadow-card);
+            font-size: 0.95rem; font-weight: 700; color: var(--text-secondary);
+            cursor: pointer; text-decoration: none; transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        }
+        .role-tab:hover { transform: translateY(-3px); box-shadow: var(--shadow-soft); color: var(--brand-dark); border-color: #d3e058; }
+        .role-tab.active {
+            background: linear-gradient(135deg, var(--brand-dark), #0A2219); color: #d3e058;
+            border-color: #d3e058; box-shadow: 0 8px 25px rgba(211,224,88, 0.25);
+        }
+        .role-tab .tab-icon { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.95rem; background: var(--bg-page); color: var(--brand-dark); transition: 0.3s; }
+        .role-tab.active .tab-icon { background: #d3e058; color: var(--brand-dark); box-shadow: 0 0 10px rgba(211,224,88,0.5); }
+
+        /* ── STATUS SUB-FILTERS ── */
+        .status-subfilters {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+            padding: 14px 18px;
+            background: var(--bg-white);
+            border-radius: var(--radius-lg);
+            border: 1px solid rgba(211,224,88,0.25);
+            box-shadow: var(--shadow-card);
+            align-items: center;
+        }
+        .status-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+            margin-right: 6px;
+        }
+        .status-chip {
+            display: inline-flex; align-items: center; gap: 7px; padding: 7px 18px;
+            border-radius: var(--radius-pill);
+            background: var(--bg-page); border: 1.5px solid rgba(0,0,0,0.07);
+            font-size: 0.85rem; font-weight: 700; color: var(--text-secondary);
+            cursor: pointer; text-decoration: none; transition: all 0.25s ease;
+        }
+        .status-chip:hover { transform: translateY(-2px); color: var(--brand-dark); border-color: #d3e058; }
+        .status-chip.active-chip {
+            background: #E8F5E9; color: #2E7D32; border-color: #66BB6A;
+            box-shadow: 0 4px 12px rgba(46,125,50,0.15);
+        }
+        .status-chip.blocked-chip.active-chip {
+            background: #FFEBEE; color: #C62828; border-color: #EF5350;
+            box-shadow: 0 4px 12px rgba(198,40,40,0.15);
+        }
+        .status-chip.all-chip.active-chip {
+            background: linear-gradient(135deg, var(--brand-dark), #0A2219); color: #d3e058; border-color: #d3e058;
+            box-shadow: 0 4px 12px rgba(211,224,88,0.2);
+        }
+        .status-dot-sm { width: 8px; height: 8px; border-radius: 50%; }
+        .status-dot-sm.green  { background: #4CAF50; }
+        .status-dot-sm.red    { background: #EF5350; }
+        .status-dot-sm.yellow { background: #FFB300; }
+
+        /* ── STAT PILLS (result summary) ── */
+        .users-stats { display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 2rem; }
+
+        /* ── USERS LIST (Row-Based) ── */
+        .users-list { display: flex; flex-direction: column; gap: 1rem; padding-bottom: 2rem; }
+
+        @@keyframes rowEntrance {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+
+        .user-row-card {
+            background: linear-gradient(135deg, rgba(255,255,255,1), rgba(244,248,201,0.4));
+            border-radius: var(--radius-lg); padding: 1.25rem 1.5rem;
+            position: relative; border: 1px solid rgba(211,224,88,0.3); box-shadow: var(--shadow-card);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); display: flex; align-items: center; gap: 1.5rem;
+            animation: rowEntrance ease-out .5s backwards;
+        }
+        
+        .user-row-card:hover { 
+            transform: translateY(-4px) scale(1.01); 
+            box-shadow: 0 15px 35px rgba(18, 55, 42, 0.1), 0 0 20px rgba(211,224,88,0.2); 
+            border-color: #d3e058; z-index: 2; 
+            background: linear-gradient(135deg, rgba(255,255,255,1), rgba(211,224,88,0.15));
+        }
+        
+        /* Colored Left Border per Role */
+        .user-row-card::before { content: ''; position: absolute; top: 0; left: 0; width: 6px; height: 100%; border-radius: var(--radius-lg) 0 0 var(--radius-lg); transition: 0.4s; }
+        .user-row-card[data-primary-role*="owner"]::before { background: linear-gradient(180deg, #64B5F6, #1565C0); }
+        .user-row-card[data-primary-role*="seller"]::before { background: linear-gradient(180deg, #FFB74D, #F57F17); }
+        .user-row-card[data-primary-role*="farmer"]::before { background: #d3e058; box-shadow: 0 0 10px #d3e058; }
+        .user-row-card:hover::before { width: 10px; filter: brightness(1.2); }
+
+        .row-identity { display: flex; align-items: center; gap: 14px; flex: 2; min-width: 250px; }
+        .user-avatar { width: 50px; height: 50px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 1.1rem; border: 3px solid var(--bg-page); box-shadow: var(--shadow-card); flex-shrink: 0; }
+        .av-farmer { background: linear-gradient(135deg, #81C784, #388E3C); color: white; }
+        .av-seller { background: linear-gradient(135deg, #FFB74D, #F57F17); color: white; }
+        .av-owner { background: linear-gradient(135deg, #64B5F6, #1565C0); color: white; }
+        .av-default { background: linear-gradient(135deg, #CE93D8, #6A1B9A); color: white; }
+
+        .name-block h4 { font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin: 0 0 2px; }
+        .name-block span { font-size: 0.75rem; font-weight: 600; color: var(--text-secondary); background: var(--bg-page); padding: 3px 8px; border-radius: var(--radius-pill); }
+
+        .row-contact { display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 600; color: var(--text-primary); flex: 1.5; min-width: 180px;}
+        .row-contact i { color: var(--brand-light); }
+
+        .row-roles { display: flex; flex-wrap: wrap; gap: 6px; flex: 1.5; min-width: 200px;}
+        .role-badge { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+        .role-badge.farmer { background: #E8F5E9; color: #2E7D32; }
+        .role-badge.seller { background: #FFF8E1; color: #F57F17; }
+        .role-badge.owner { background: #E3F2FD; color: #1565C0; }
+        .role-badge.default { background: #F3E5F5; color: #6A1B9A; }
+        
+        .row-status { flex: 1; min-width: 120px; display:flex; align-items:center; gap:8px;}
+        .status-dot { width: 12px; height: 12px; border-radius: 50%; box-shadow: 0 0 0 4px rgba(255,255,255,0.8); }
+        .status-dot.active { background: #4CAF50; box-shadow: 0 0 0 4px #E8F5E9; }
+        .status-dot.blocked { background: #EF5350; box-shadow: 0 0 0 4px #FFEBEE; }
+        .status-dot.other { background: #FFB300; box-shadow: 0 0 0 4px #FFF8E1; }
+        .status-text { font-size:0.85rem; font-weight:700; color:var(--text-secondary); text-transform:uppercase; letter-spacing:0.5px;}
+
+        .row-actions { flex-shrink:0; display: flex; align-items: center; gap: 10px; }
+        .btn-toggle-status {
+            width: 42px; height: 42px; border-radius: 50%;
+            display: inline-flex; align-items: center; justify-content: center;
+            border: none; cursor: pointer; transition: all 0.3s ease;
+            box-shadow: var(--shadow-card); font-size: 1.05rem;
+        }
+        .btn-toggle-status.block-btn {
+            background: #FFF; color: #EF5350; border: 2px solid rgba(239,83,80,0.2);
+        }
+        .btn-toggle-status.block-btn:hover { background: #EF5350; color: #FFF; transform: scale(1.1); box-shadow: 0 4px 15px rgba(239,83,80,0.3); }
+        .btn-toggle-status.unblock-btn {
+            background: #FFF; color: #4CAF50; border: 2px solid rgba(76,175,80,0.2);
+        }
+        .btn-toggle-status.unblock-btn:hover { background: #4CAF50; color: #FFF; transform: scale(1.1); box-shadow: 0 4px 15px rgba(76,175,80,0.3); }
+
+        .btn-view {
+            display: inline-flex; justify-content: center; align-items: center; gap: 8px; padding: 10px 24px;
+            border-radius: var(--radius-pill); font-size: 0.95rem; font-weight: 800;
+            background: var(--brand-dark); color: #FFF; border: none; cursor: pointer; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 4px 15px rgba(18,55,42,0.2);
+        }
+        .user-row-card:hover .btn-view { 
+            background: #d3e058; color: var(--brand-dark); 
+            box-shadow: 0 8px 25px rgba(211,224,88,0.5); 
+            transform: translateY(-2px);
+        }
+
+        .result-count { font-size: 0.9rem; font-weight: 600; color: var(--text-secondary); margin-bottom: 1.5rem; display: flex; align-items: center; gap: 8px; }
+        .result-count span.badge { background: var(--brand-dark); color: #d3e058; padding: 4px 12px; border-radius: var(--radius-pill); font-size: 1rem; }
+
+        /* ── EMPTY STATE ── */
+        .empty-creative { text-align: center; padding: 5rem 2rem; background: var(--bg-white); border-radius: var(--radius-xl); border: 2px dashed rgba(0,0,0,0.1); grid-column: 1 / -1; }
+        .empty-creative .empty-icon { font-size: 4rem; color: #d3e058; filter: drop-shadow(0 4px 15px rgba(211, 224, 88, 0.4)); margin-bottom: 1.5rem; display: block; }
+        .empty-creative h5 { font-size: 1.5rem; font-weight: 800; color: var(--text-primary); margin-bottom: 0.5rem; }
+
+        /* ── ACTIVITY DRAWER (Premium) ── */
+        .drawer-overlay { position: fixed; inset: 0; background: rgba(10, 34, 25, 0.6); backdrop-filter: blur(8px); z-index: 2000; opacity: 0; pointer-events: none; transition: opacity .4s ease; }
+        .drawer-overlay.open { opacity: 1; pointer-events: all; }
+        
+        .activity-drawer {
+            position: fixed; top: 0; right: -750px; width: 700px; max-width: 100vw; height: 100vh;
+            background: var(--bg-page); box-shadow: -20px 0 80px rgba(18,55,42,0.4); z-index: 2001;
+            transition: right .5s cubic-bezier(0.19, 1, 0.22, 1); display: flex; flex-direction: column; overflow: hidden;
+            border-left: 2px solid #d3e058;
+        }
+        .activity-drawer.open { right: 0; }
+        
+        .drawer-header {
+            padding: 30px 40px; background: linear-gradient(135deg, var(--brand-dark), #0A2219); position: relative;
+            color: white; display: flex; align-items: flex-start; justify-content: space-between; flex-shrink: 0;
+            border-bottom: 3px solid #d3e058;
+        }
+        .drawer-header h3 { font-size: 1.6rem; font-weight: 800; margin: 0 0 6px; letter-spacing: -0.5px; color: white !important; }
+        .drawer-header p { font-size: 0.9rem; color: #d3e058; margin: 0; font-weight: 600; display:flex; align-items:center; gap:6px;}
+        .drawer-close { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: white; width: 44px; height: 44px; border-radius: 50%; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all .3s; font-size: 1.2rem; }
+        .drawer-close:hover { background: #d3e058; color: var(--brand-dark); transform: rotate(90deg); border-color: #d3e058; }
+        
+        .drawer-body { overflow-y: auto; flex: 1; padding: 40px; }
+        
+        /* Drawer User Profile Display */
+        .drawer-user-card { display: flex; align-items: center; gap: 20px; background: var(--bg-white); border-radius: var(--radius-xl); padding: 24px; margin-bottom: 2rem; box-shadow: var(--shadow-card); border: 1px solid rgba(0,0,0,0.05); }
+        .drawer-user-card .big-avatar { width: 80px; height: 80px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 2rem; border: 4px solid var(--bg-page); box-shadow: var(--shadow-soft); flex-shrink: 0; }
+        .drawer-user-card .user-details h4 { font-size: 1.4rem; font-weight: 800; margin: 0 0 8px; color: var(--text-primary); }
+        .drawer-user-card .user-details p { font-size: 0.95rem; color: var(--text-secondary); margin: 0; font-weight: 500; }
+        
+        /* Drawer Timeline/Sections */
+        .activity-section { margin-bottom: 2.5rem; }
+        .activity-section-header { display: flex; align-items: center; gap: 12px; margin-bottom: 1rem; border-bottom: 2px solid rgba(211,224,88,0.2); padding-bottom: 12px; }
+        .activity-section-header h5 { font-size: 1.25rem; font-weight: 800; color: var(--text-primary); margin: 0; display:flex; align-items:center; gap:12px; }
+        .activity-section-header .count-chip { margin-left: auto; background: var(--brand-dark); color: #d3e058; font-size: 0.9rem; font-weight: 800; padding: 4px 14px; border-radius: var(--radius-pill); box-shadow: 0 4px 10px rgba(18,55,42,0.15); }
+        
+        .act-item { background: var(--bg-white); border-radius: var(--radius-lg); padding: 18px 20px; margin-bottom: 12px; border: 1px solid rgba(0,0,0,0.03); box-shadow: 0 2px 10px rgba(0,0,0,0.02); transition: 0.3s; display: flex; justify-content: space-between; align-items: center;}
+        .act-item:hover { transform: translateX(5px); border-color: #d3e058; box-shadow: var(--shadow-soft); }
+        .act-item-left { flex: 1; }
+        .act-item .act-title { font-weight: 700; font-size: 1.05rem; color: var(--text-primary); margin-bottom: 4px; }
+        .act-item .act-sub { color: var(--text-secondary); font-size: 0.85rem; font-weight: 500;}
+        .act-status { display: inline-flex; justify-content:center; align-items:center; padding: 6px 14px; border-radius: var(--radius-pill); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; }
+
+        /* Act Status Colors - Premium */
+        .act-status.approved,.act-status.active,.act-status.paid,.act-status.completed { background: #E8F5E9; color: #2E7D32; box-shadow: 0 0 0 1px rgba(46,125,50,0.1); }
+        .act-status.pending { background: #FFF8E1; color: #F57F17; box-shadow: 0 0 0 1px rgba(245,127,23,0.1); }
+        .act-status.rejected,.act-status.blocked,.act-status.expired { background: #FFEBEE; color: #C62828; box-shadow: 0 0 0 1px rgba(198,40,40,0.1); }
+        
+        .no-activity-creative { background: var(--bg-white); border-radius: var(--radius-lg); padding: 2rem; text-align: center; border: 1px dashed rgba(0,0,0,0.1); }
+        .no-activity-creative i { font-size: 2rem; color: rgba(0,0,0,0.1); margin-bottom: 10px; display: block;}
+        
+        /* Custom Scrollbar for Drawer */
+        .drawer-body::-webkit-scrollbar { width: 8px; }
+        .drawer-body::-webkit-scrollbar-track { background: transparent; }
+        .drawer-body::-webkit-scrollbar-thumb { background: rgba(18,55,42,0.2); border-radius: 10px; }
+        .drawer-body::-webkit-scrollbar-thumb:hover { background: rgba(18,55,42,0.4); }
+
+    </style>
+}
+
+<!-- ── HEADER & FLOATING SEARCH ── -->
+<div class="users-header-container">
+    <div class="users-title-block">
+        <h2><i class="fa-solid fa-users"></i> User Registry</h2>
+        <p>Manage, monitor, and assist all platform registered accounts.</p>
+    </div>
+
+    <!-- Floating Live Search -->
+    <div class="search-wrap">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input type="text" id="liveSearch" class="search-input"
+               placeholder="Find by name or mobile..."
+               value="@searchQuery" autocomplete="off">
+        <i class="fa-solid fa-spinner search-loader" id="searchLoader"></i>
+    </div>
+</div>
+
+<!-- ── ROLE TABS (All / Farmers / Owners / Sellers) ── -->
+<div class="role-tabs">
+    <a href="/Admin/Users@(selectedStatus != null ? "?status=" + Uri.EscapeDataString(selectedStatus) : "")"
+       class="role-tab @(isAllTab ? "active" : "")">
+        <span class="tab-icon"><i class="fa-solid fa-layer-group"></i></span>
+        All Users
+        @if (isAllTab) { <strong style="margin-left:4px; background:rgba(211,224,88,0.2); padding: 2px 8px; border-radius: 20px;">@total</strong> }
+    </a>
+    <a href="/Admin/Users?role=Farmer@(selectedStatus != null ? "&status=" + Uri.EscapeDataString(selectedStatus) : "")"
+       class="role-tab @(isFarmerTab ? "active" : "")">
+        <span class="tab-icon"><i class="fa-solid fa-wheat-awn"></i></span>
+        Farmers
+        @if (isFarmerTab) { <strong style="margin-left:4px; background:rgba(211,224,88,0.2); padding: 2px 8px; border-radius: 20px;">@total</strong> }
+    </a>
+    <a href="/Admin/Users?role=Owner@(selectedStatus != null ? "&status=" + Uri.EscapeDataString(selectedStatus) : "")"
+       class="role-tab @(isOwnerTab ? "active" : "")">
+        <span class="tab-icon"><i class="fa-solid fa-tractor"></i></span>
+        Owners
+        @if (isOwnerTab) { <strong style="margin-left:4px; background:rgba(211,224,88,0.2); padding: 2px 8px; border-radius: 20px;">@total</strong> }
+    </a>
+    <a href="/Admin/Users?role=Seller@(selectedStatus != null ? "&status=" + Uri.EscapeDataString(selectedStatus) : "")"
+       class="role-tab @(isSellerTab ? "active" : "")">
+        <span class="tab-icon"><i class="fa-solid fa-shop"></i></span>
+        Sellers
+        @if (isSellerTab) { <strong style="margin-left:4px; background:rgba(211,224,88,0.2); padding: 2px 8px; border-radius: 20px;">@total</strong> }
+    </a>
+</div>
+
+<!-- ── STATUS SUB-FILTERS (inside each role tab) ── -->
+@{
+    // Base URL preserves the current role
+    var roleParam  = selectedRole != null ? $"role={Uri.EscapeDataString(selectedRole)}&" : "";
+    var allUrl     = selectedRole != null ? $"/Admin/Users?role={Uri.EscapeDataString(selectedRole)}" : "/Admin/Users";
+    var activeUrl  = $"/Admin/Users?{roleParam}status=Active";
+    var blockedUrl = $"/Admin/Users?{roleParam}status=Blocked";
+
+    bool statusIsAll     = selectedStatus == null;
+    bool statusIsActive  = selectedStatus == "Active";
+    bool statusIsBlocked = selectedStatus == "Blocked";
+}
+<div class="status-subfilters">
+    <span class="status-label"><i class="fa-solid fa-filter" style="margin-right:4px;"></i> Filter by Status:</span>
+
+    <a href="@allUrl" class="status-chip all-chip @(statusIsAll ? "active-chip" : "")">
+        <i class="fa-solid fa-users" style="font-size:0.8rem;"></i> All
+        @if (statusIsAll) { <strong style="font-size:0.8rem; padding: 1px 6px; background:rgba(255,255,255,0.15); border-radius:10px;">@total</strong> }
+    </a>
+
+    <a href="@activeUrl" class="status-chip @(statusIsActive ? "active-chip" : "")">
+        <span class="status-dot-sm green"></span> Active
+        @if (statusIsActive) { <strong style="font-size:0.8rem; padding: 1px 6px; background:rgba(46,125,50,0.15); border-radius:10px;">@total</strong> }
+    </a>
+
+    <a href="@blockedUrl" class="status-chip blocked-chip @(statusIsBlocked ? "active-chip" : "")">
+        <span class="status-dot-sm red"></span> Blocked
+        @if (statusIsBlocked) { <strong style="font-size:0.8rem; padding: 1px 6px; background:rgba(198,40,40,0.15); border-radius:10px;">@total</strong> }
+    </a>
+</div>
+
+<div class="result-count" id="resultCountContainer">
+    Found <span class="badge" id="visibleCount">@(Model?.Count ?? 0)</span> Users
+    @if (selectedRole != null || selectedStatus != null)
+    {
+        <span style="color:var(--text-secondary); font-weight:500;">
+            @if (selectedRole != null) { <text>in <strong>@selectedRole</strong></text> }
+            @if (selectedStatus != null) { <text>&nbsp;• Status: <strong>@selectedStatus</strong></text> }
+        </span>
+    }
+</div>
+
+<!-- ── CUSTOM USER ROW LIST ── -->
+<div class="users-list" id="usersGrid">
+    @if (Model != null && Model.Any())
+    {
+        int delayIndex = 1;
+        foreach (var user in Model)
+        {
+            var primaryRole = user.Role.ToLower();
+            var avClass = primaryRole.Contains("farmer") ? "av-farmer"
+                        : primaryRole.Contains("seller") ? "av-seller"
+                        : primaryRole.Contains("owner")  ? "av-owner"
+                        : "av-default";
+            
+            var statusClass = user.Status?.ToLower() == "active"  ? "active"
+                            : user.Status?.ToLower() == "blocked" ? "blocked"
+                            : "other";
+            
+            var initials = string.Join("", (user.FullName ?? "?").Split(' ')
+                .Where(w => w.Length > 0).Take(2).Select(w => char.ToUpper(w[0])));
+
+            <div class="user-row-card" data-name="@(user.FullName?.ToLower() ?? "")" data-mobile="@user.MobileNumber" data-primary-role="@primaryRole" style="animation-delay: @((delayIndex * 0.05).ToString(System.Globalization.CultureInfo.InvariantCulture))s">
+                
+                <div class="row-identity">
+                    <div class="user-avatar @avClass">@initials</div>
+                    <div class="name-block">
+                        <h4>@user.FullName</h4>
+                        <span>ID: @user.UserId</span>
+                    </div>
+                </div>
+
+                <div class="row-contact">
+                    <i class="fa-solid fa-phone"></i>
+                    @user.MobileNumber
+                </div>
+
+                <div class="row-roles">
+                    @foreach (var r in user.Roles)
+                    {
+                        var rKey  = r.ToLower();
+                        var rCls  = rKey.Contains("farmer") ? "farmer"
+                                  : rKey.Contains("seller") ? "seller"
+                                  : rKey.Contains("owner")  ? "owner" : "default";
+                        var rIcon = rKey.Contains("farmer") ? "fa-wheat-awn"
+                                  : rKey.Contains("seller") ? "fa-shop"
+                                  : rKey.Contains("owner")  ? "fa-tractor" : "fa-user";
+                        <span class="role-badge @rCls">
+                            <i class="fa-solid @rIcon"></i> @r
+                        </span>
+                    }
+                </div>
+
+                <div class="row-status">
+                     <div class="status-dot @statusClass"></div>
+                     <span class="status-text">@user.Status</span>
+                </div>
+
+                <div class="row-actions">
+                    <form asp-action="ToggleUserStatus" asp-controller="Admin" method="post" style="margin: 0;">
+                        <input type="hidden" name="id" value="@user.UserId" />
+                        <input type="hidden" name="returnRole" value="@selectedRole" />
+                        <input type="hidden" name="returnStatus" value="@selectedStatus" />
+                        <input type="hidden" name="search" value="@searchQuery" />
+                        @if (statusClass == "blocked")
+                        {
+                            <button type="submit" class="btn-toggle-status unblock-btn" title="Unblock User">
+                                <i class="fa-solid fa-unlock"></i>
+                            </button>
+                        }
+                        else
+                        {
+                            <button type="submit" class="btn-toggle-status block-btn" title="Block User" onclick="return confirm('Are you sure you want to block this user?');">
+                                <i class="fa-solid fa-lock"></i>
+                            </button>
+                        }
+                    </form>
+                    <button class="btn-view" onclick="openActivity(@user.UserId, '@Uri.EscapeDataString(user.FullName ?? "")', '@avClass', '@initials')">
+                        Activity <i class="fa-solid fa-arrow-right"></i>
+                    </button>
+                </div>
+            </div>
+            
+            delayIndex++;
+        }
+    }
+    
+    <!-- Empty State -->
+    <div id="noResultsState" class="empty-creative" style="@(Model != null && Model.Any() ? "display:none;" : "")">
+        <i class="fa-solid fa-face-frown empty-icon"></i>
+        <h5>No Users Found</h5>
+        <p style="color:var(--text-secondary);">We couldn't find any users matching the current criteria or search text.</p>
+    </div>
+</div>
+
+
+<!-- ── ACTIVITY DRAWER (Premium) ── -->
+<div class="drawer-overlay" id="drawerOverlay" onclick="closeActivity()"></div>
+<div class="activity-drawer" id="activityDrawer">
+    <div class="drawer-header">
+        <div>
+            <h3 id="drawerTitle">User Activity</h3>
+            <p id="drawerSub"><i class="fa-solid fa-circle-notch fa-spin"></i> Fetching details...</p>
+        </div>
+        <button class="drawer-close" onclick="closeActivity()"><i class="fa-solid fa-xmark"></i></button>
+    </div>
+    <div class="drawer-body" id="drawerBody">
+        <div style="text-align:center; padding: 4rem; color: var(--text-secondary);">
+            <i class="fa-solid fa-spinner fa-spin fa-3x" style="color: #d3e058; margin-bottom: 1rem;"></i>
+            <h4>Preparing Drawer</h4>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+    // ===================== LIVE ASYNC SEARCH =====================
+    const searchInput  = document.getElementById('liveSearch');
+    const searchLoader = document.getElementById('searchLoader');
+    const usersGrid    = document.getElementById('usersGrid');
+    const visibleCount = document.getElementById('visibleCount');
+    const noResults    = document.getElementById('noResultsState');
+    let debounceTimer;
+
+    searchInput.addEventListener('input', () => {
+        clearTimeout(debounceTimer);
+        const q = searchInput.value.trim().toLowerCase();
+
+        if (q.length === 0) {
+            filterCards('');
+            return;
+        }
+
+        searchLoader.classList.add('active');
+        debounceTimer = setTimeout(() => {
+            filterCards(q);
+            searchLoader.classList.remove('active');
+        }, 300);
+    });
+
+    function filterCards(q) {
+        const cards = usersGrid.querySelectorAll('.user-row-card');
+        let visible = 0;
+        
+        cards.forEach(card => {
+            const name   = card.dataset.name || '';
+            const mobile = card.dataset.mobile || '';
+            const match  = !q || name.includes(q) || mobile.includes(q);
+            
+            if (match) {
+                card.style.display = 'flex';
+                visible++;
+            } else {
+                card.style.display = 'none';
+            }
+        });
+
+        visibleCount.textContent = visible;
+        
+        if (visible === 0) {
+            noResults.style.display = 'block';
+        } else {
+            noResults.style.display = 'none';
+        }
+    }
+
+    // ===================== ACTIVITY DRAWER =====================
+    function openActivity(userId, nameEncoded, avClass, initials) {
+        const name = decodeURIComponent(nameEncoded);
+        document.getElementById('drawerTitle').textContent = name;
+        document.getElementById('drawerSub').innerHTML = '<i class="fa-solid fa-circle-notch fa-spin"></i> Loading secure data...';
+        document.getElementById('drawerBody').innerHTML = 
+            '<div style="text-align:center; padding: 4rem; color: var(--text-secondary);"><i class="fa-solid fa-spinner fa-spin fa-3x" style="color: #d3e058; margin-bottom: 1rem;"></i><h4>Preparing Drawer</h4></div>';
+        
+        document.getElementById('activityDrawer').classList.add('open');
+        document.getElementById('drawerOverlay').classList.add('open');
+        document.body.style.overflow = 'hidden';
+
+        fetch(`/Admin/UserActivity/${userId}`)
+        .then(r => r.json())
+        .then(data => renderActivity(data, avClass, initials))
+        .catch((e) => {
+            console.error(e);
+            document.getElementById('drawerBody').innerHTML =
+                '<div class="empty-creative"><i class="fa-solid fa-triangle-exclamation empty-icon" style="color: var(--farm-alert)"></i><h5>Connection Interrupted</h5><p>Could not load the activity feed. Ensure the backend API is active.</p></div>';
+        });
+    }
+
+    function closeActivity() {
+        document.getElementById('activityDrawer').classList.remove('open');
+        document.getElementById('drawerOverlay').classList.remove('open');
+        document.body.style.overflow = '';
+    }
+
+    function statusCls(s) {
+        s = (s||'').toLowerCase();
+        if (['active','approved','paid','completed'].includes(s)) return 'approved';
+        if (['pending'].includes(s)) return 'pending';
+        return 'rejected';
+    }
+
+    function renderActivity(d, avClass, initials) {
+        document.getElementById('drawerSub').innerHTML =
+            `<i class="fa-solid fa-id-badge"></i> Account #${d.userId} &nbsp;|&nbsp; <i class="fa-solid fa-mobile"></i> ${d.mobileNumber || 'N/A'}`;
+
+        const roles = (d.roles||[]).map(r => {
+            const rk = r.toLowerCase();
+            const cls = rk.includes('farmer')?'farmer':rk.includes('seller')?'seller':rk.includes('owner')?'owner':'default';
+            const ic  = rk.includes('farmer')?'fa-wheat-awn':rk.includes('seller')?'fa-shop':rk.includes('owner')?'fa-tractor':'fa-user';
+            return `<span class="role-badge ${cls}"><i class="fa-solid ${ic}"></i> ${r}</span>`;
+        }).join(' ');
+
+        let html = `<div class="drawer-user-card">
+            <div class="big-avatar ${avClass}">${initials}</div>
+            <div class="user-details">
+                <h4>${d.fullName}</h4>
+                <p>Status: <strong style="color: var(--text-primary);">${d.status}</strong></p>
+                <div style="display:flex;flex-wrap:wrap;gap:5px;margin-top:10px">${roles || '<span class="role-badge default">Unassigned</span>'}</div>
+            </div>
+        </div>`;
+
+        // Blocks Generation
+        html += buildSection('Registered Equipment', 'fa-tractor', d.equipments||[], e =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">${e.equipmentName}</div>
+                    <div class="act-sub"><i class="fa-solid fa-location-dot"></i> ${e.location} &nbsp;|&nbsp; ₹${e.price} / ${e.priceType}</div>
+                </div>
+                <span class="act-status ${statusCls(e.status)}">${e.status}</span>
+            </div>`);
+
+        html += buildSection('Products Listed', 'fa-box', d.products||[], p =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">${p.productName}</div>
+                    <div class="act-sub"><i class="fa-solid fa-location-dot"></i> ${p.location} &nbsp;|&nbsp; <i class="fa-solid fa-tag"></i> ₹${p.price} / ${p.unit}</div>
+                </div>
+                <span class="act-status ${statusCls(p.status)}">${p.status}</span>
+            </div>`);
+
+        html += buildSection('Orders Placed', 'fa-bag-shopping', d.orders||[], o =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">Order #${o.orderId}</div>
+                    <div class="act-sub"><i class="fa-solid fa-calendar"></i> ${new Date(o.createdAt).toLocaleDateString()} &nbsp;|&nbsp; ₹${o.totalAmount}</div>
+                </div>
+                <span class="act-status ${statusCls(o.orderStatus)}">${o.orderStatus}</span>
+            </div>`);
+
+        html += buildSection('Equipment Bookings', 'fa-calendar-check', d.bookings||[], b =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">Booking FRM-${b.bookingId}</div>
+                    <div class="act-sub"><i class="fa-solid fa-clock"></i> ${new Date(b.startDate).toLocaleDateString()} to ${new Date(b.endDate).toLocaleDateString()} &nbsp;|&nbsp; Total: ₹${b.totalPrice}</div>
+                </div>
+                <span class="act-status ${statusCls(b.status)}">${b.status}</span>
+            </div>`);
+
+        html += buildSection('Active Subscriptions', 'fa-star', d.subscriptions||[], s =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">Plan ID #${s.planId} (Sub #${s.subscriptionId})</div>
+                    <div class="act-sub"><i class="fa-solid fa-hourglass-half"></i> ${new Date(s.startDate).toLocaleDateString()} to ${new Date(s.endDate).toLocaleDateString()}</div>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px; align-items:flex-end;">
+                     <span class="act-status ${statusCls(s.status)}">${s.status}</span>
+                     <span class="act-status ${statusCls(s.paymentStatus)}" style="font-size:0.7rem; padding: 4px 10px;">${s.paymentStatus}</span>
+                </div>
+            </div>`);
+
+        html += buildSection('Support Complaints', 'fa-circle-exclamation', d.complaints||[], c =>
+            `<div class="act-item" style="align-items:flex-start">
+                <div class="act-item-left">
+                    <div class="act-title"><i class="fa-solid fa-quote-left" style="color:#d3e058"></i> ${c.description}</div>
+                    <div class="act-sub mt-2"><i class="fa-solid fa-calendar"></i> ${new Date(c.createdAt).toLocaleDateString()}</div>
+                </div>
+                <span class="act-status ${statusCls(c.status)}">${c.status}</span>
+            </div>`);
+
+        html += buildSection('Reviews & Ratings', 'fa-star-half-stroke', d.reviews||[], r =>
+            `<div class="act-item">
+                <div class="act-item-left">
+                    <div class="act-title">Reviewed ${r.ratingType} #${r.targetId}</div>
+                    <div class="act-sub">"${r.comment || 'No written comment'}"</div>
+                </div>
+                <div style="color: #d3e058; font-size:1.1rem; letter-spacing:2px; filter: drop-shadow(0 0 2px rgba(0,0,0,0.2));">
+                    ${'★'.repeat(r.ratingValue)}${'☆'.repeat(5-r.ratingValue)}
+                </div>
+            </div>`);
+
+        document.getElementById('drawerBody').innerHTML = html;
+    }
+
+    function buildSection(title, icon, items, renderFn) {
+        // Icon color is handled by global brand now
+        return `
+        <div class="activity-section">
+            <div class="activity-section-header">
+                <h5><i class="fa-solid ${icon}" style="color:var(--brand-dark); font-size:1.4rem;"></i> ${title}</h5>
+                <span class="count-chip">${items.length}</span>
+            </div>
+            ${items.length > 0 
+                ? items.map(renderFn).join('') 
+                : `<div class="no-activity-creative"><i class="fa-regular fa-folder-open"></i> No ${title.toLowerCase()} recorded for this user yet.</div>`}
+        </div>`;
+    }
+    </script>
+}

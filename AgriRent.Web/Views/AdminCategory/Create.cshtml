@@ -1,0 +1,208 @@
+@model AgriRent.DTOs.CategoryDto
+@{
+    ViewData["Title"] = "Create Category";
+    Layout = "_AdminLayout";
+}
+
+<style>
+    :root {
+        --primary-accent: #2c974b;
+        --primary-accent-hover: #1e7035;
+        --card-bg: rgba(255, 255, 255, 0.9);
+        --input-bg: #f8fafc;
+        --input-border: #e2e8f0;
+    }
+
+    .form-container-premium {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #64748b;
+        text-decoration: none;
+        font-weight: 500;
+        margin-bottom: 20px;
+        transition: color 0.2s;
+    }
+
+    .back-link:hover {
+        color: var(--primary-accent);
+    }
+
+    .premium-card {
+        background: var(--card-bg);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.6);
+        border-radius: 20px;
+        padding: 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.04);
+    }
+
+    .premium-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #f1f5f9;
+    }
+
+    .premium-header-icon {
+        width: 50px;
+        height: 50px;
+        background: linear-gradient(135deg, #2c974b, #D4E157);
+        color: white;
+        border-radius: 14px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 1.5rem;
+        box-shadow: 0 4px 15px rgba(44, 151, 75, 0.3);
+    }
+
+    .premium-header h3 {
+        margin: 0;
+        font-weight: 700;
+        color: #1e293b;
+    }
+
+    .premium-input-group {
+        margin-bottom: 25px;
+    }
+
+    .premium-label {
+        display: block;
+        font-weight: 600;
+        color: #475569;
+        margin-bottom: 8px;
+        font-size: 0.95rem;
+    }
+
+    .premium-control {
+        width: 100%;
+        padding: 14px 20px;
+        background-color: var(--input-bg);
+        border: 2px solid var(--input-border);
+        border-radius: 12px;
+        font-size: 1rem;
+        color: #334155;
+        transition: all 0.3s ease;
+    }
+
+    .premium-control:focus {
+        outline: none;
+        border-color: var(--primary-accent);
+        background-color: #fff;
+        box-shadow: 0 0 0 4px rgba(44, 151, 75, 0.1);
+    }
+
+    .btn-submit-premium {
+        background: linear-gradient(135deg, #2c974b 0%, #1e7035 100%);
+        color: white;
+        border: none;
+        padding: 16px 30px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1.1rem;
+        width: 100%;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        box-shadow: 0 8px 20px rgba(44, 151, 75, 0.25);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .btn-submit-premium:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 12px 25px rgba(44, 151, 75, 0.35);
+    }
+
+    .info-box {
+        margin-top: 30px;
+        background: #f0fdf4;
+        border-radius: 12px;
+        padding: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        border: 1px dashed #bbf7d0;
+    }
+
+    .info-box i {
+        font-size: 2rem;
+        color: #22c55e;
+    }
+
+    .info-box p {
+        margin: 0;
+        color: #166534;
+        font-size: 0.9rem;
+        font-weight: 500;
+    }
+</style>
+
+<div class="form-container-premium">
+    <a href="/AdminCategory" class="back-link">
+        <i class="fa-solid fa-arrow-left-long"></i> Back to Categories
+    </a>
+
+    <div class="premium-card">
+        <div class="premium-header">
+            <div class="premium-header-icon">
+                <i class="fa-solid fa-plus"></i>
+            </div>
+            <div>
+                <h3>Create New Category</h3>
+                <span style="color: #64748b; font-size: 0.9rem;">Add a new primary grouping for agricultural items</span>
+            </div>
+        </div>
+        
+        <form action="/AdminCategory/Create" method="post">
+            @Html.AntiForgeryToken()
+            
+            <div class="premium-input-group">
+                <label class="premium-label">Category Name</label>
+                <input type="text" name="Name" class="premium-control" placeholder="e.g. Tractors, Harvesters, Fertilizers" required />
+                <span class="text-danger" style="font-size: 0.85rem; margin-top: 5px; display: block;">@Html.ValidationMessage("Name")</span>
+            </div>
+
+            <div class="premium-input-group">
+                <label class="premium-label">Category Type</label>
+                <select name="Type" class="premium-control">
+                    <option value="Equipment" selected>Equipment (for rental items)</option>
+                    <option value="Product">Product (for sale items)</option>
+                </select>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Equipment categories appear for owners listing rentals. Product categories appear for sellers listing products.
+                </div>
+            </div>
+
+            <div class="premium-input-group">
+                <label class="premium-label">Visibility Status</label>
+                <select name="Status" class="premium-control">
+                    <option value="Active" selected>Active</option>
+                    <option value="Inactive">Inactive</option>
+                </select>
+                <div style="font-size: 0.85rem; color: #64748b; margin-top: 8px;">
+                    <i class="fa-solid fa-circle-info me-1"></i> Inactive categories will not appear on the user app.
+                </div>
+            </div>
+
+            <button type="submit" class="btn-submit-premium">
+                <i class="fa-solid fa-check"></i> Create Category
+            </button>
+        </form>
+
+        <div class="info-box">
+            <i class="fa-solid fa-lightbulb"></i>
+            <p><strong>Pro Tip:</strong> Top-level categories should be broad (e.g., "Equipment"). Use Subcategories for specific types (e.g., "Plows", "Sprayers").</p>
+        </div>
+    </div>
+</div>

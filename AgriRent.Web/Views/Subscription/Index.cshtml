@@ -1,0 +1,849 @@
+@model AgriRent.Web.Controllers.SubscriptionIndexViewModel
+
+@{
+    ViewData["Title"] = "Premium Plans";
+    bool isLoggedIn = Context.Session.GetString("JwtToken") != null;
+}
+
+@section Styles {
+<style>
+    /* ── Hero ─────────────────────────────────────────────────────────────── */
+    .sub-hero {
+        background: linear-gradient(135deg, #0f4c2a 0%, #1a7a42 50%, #22a855 100%);
+        padding: 90px 0 120px;
+        position: relative;
+        overflow: hidden;
+        color: #fff;
+        text-align: center;
+    }
+    .sub-hero::before {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.04'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    .sub-hero .badge-pill {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(255,255,255,0.15);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255,255,255,0.25);
+        color: #fff;
+        padding: 6px 18px;
+        border-radius: 50px;
+        font-size: 13px;
+        font-weight: 600;
+        letter-spacing: 0.5px;
+        margin-bottom: 20px;
+    }
+    .sub-hero h1 {
+        font-size: clamp(2rem, 5vw, 3.5rem);
+        font-weight: 800;
+        line-height: 1.15;
+        margin-bottom: 18px;
+    }
+    .sub-hero h1 span { color: #a8f0c6; }
+    .sub-hero p {
+        font-size: 1.15rem;
+        opacity: 0.85;
+        max-width: 560px;
+        margin: 0 auto;
+    }
+    .wave-divider {
+        position: absolute;
+        bottom: -2px; left: 0; right: 0;
+        line-height: 0;
+    }
+    .wave-divider svg { display: block; width: 100%; }
+
+    /* ── Cards Section ────────────────────────────────────────────────────── */
+    .plans-section { padding: 60px 0 80px; background: #f8faf9; }
+
+    .plan-card {
+        background: #fff;
+        border-radius: 24px;
+        border: 2px solid #e8f5e9;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+        transition: transform 0.35s cubic-bezier(.34,1.56,.64,1), box-shadow 0.35s ease;
+        position: relative;
+        overflow: hidden;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+    }
+    .plan-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 50px rgba(34,168,85,0.18);
+        border-color: #22a855;
+    }
+    .plan-card.is-current {
+        border-color: #22a855;
+        border-width: 2px;
+        box-shadow: 0 8px 30px rgba(34,168,85,0.2);
+    }
+    .plan-card.is-popular {
+        border-color: #f59e0b;
+    }
+    .plan-card.is-popular:hover {
+        box-shadow: 0 20px 50px rgba(245,158,11,0.2);
+        border-color: #f59e0b;
+    }
+
+    /* Popular ribbon */
+    .popular-ribbon {
+        position: absolute;
+        top: 18px; right: -28px;
+        background: linear-gradient(135deg, #f59e0b, #ef4444);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 1px;
+        padding: 5px 36px;
+        transform: rotate(45deg);
+        text-transform: uppercase;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+    }
+
+    /* Current plan badge */
+    .current-badge {
+        position: absolute;
+        top: 0; left: 50%;
+        transform: translateX(-50%);
+        background: linear-gradient(90deg, #22a855, #16a34a);
+        color: #fff;
+        font-size: 11px;
+        font-weight: 700;
+        letter-spacing: 0.5px;
+        padding: 5px 20px;
+        border-radius: 0 0 14px 14px;
+        box-shadow: 0 4px 12px rgba(34,168,85,0.35);
+        white-space: nowrap;
+        z-index: 2;
+    }
+
+    /* Card header */
+    .plan-header {
+        padding: 36px 28px 24px;
+        text-align: center;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    .plan-icon {
+        width: 56px; height: 56px;
+        border-radius: 16px;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        margin-bottom: 14px;
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        color: #16a34a;
+    }
+    .plan-card.is-popular .plan-icon {
+        background: linear-gradient(135deg, #fef3c7, #fde68a);
+        color: #d97706;
+    }
+    .plan-name {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: #1a2e1a;
+        margin-bottom: 4px;
+    }
+    .plan-duration {
+        font-size: 13px;
+        color: #6b7280;
+        font-weight: 500;
+    }
+
+    /* Price */
+    .plan-price-wrap {
+        padding: 20px 28px;
+        text-align: center;
+    }
+    .plan-price {
+        font-size: 3rem;
+        font-weight: 800;
+        color: #16a34a;
+        line-height: 1;
+    }
+    .plan-price sup { font-size: 1.2rem; vertical-align: super; }
+    .plan-price-sub { font-size: 13px; color: #9ca3af; margin-top: 4px; }
+
+    /* Features */
+    .plan-features {
+        padding: 0 28px 24px;
+        flex: 1;
+    }
+    .plan-features ul { list-style: none; padding: 0; margin: 0; }
+    .plan-features li {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 9px 0;
+        border-bottom: 1px solid #f3f4f6;
+        font-size: 14px;
+        color: #374151;
+    }
+    .plan-features li:last-child { border-bottom: none; }
+    .plan-features li .fi {
+        width: 22px; height: 22px;
+        border-radius: 50%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 11px;
+        flex-shrink: 0;
+        background: #dcfce7;
+        color: #16a34a;
+    }
+    .plan-features li strong { color: #111827; }
+
+    /* Expiry alert */
+    .expiry-alert {
+        margin: 0 28px 16px;
+        background: linear-gradient(135deg, #f0fdf4, #dcfce7);
+        border: 1px solid #bbf7d0;
+        border-radius: 12px;
+        padding: 10px 16px;
+        font-size: 13px;
+        color: #15803d;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    /* CTA Button */
+    .plan-cta { padding: 0 28px 28px; }
+    .btn-subscribe {
+        width: 100%;
+        padding: 14px;
+        border-radius: 14px;
+        font-weight: 700;
+        font-size: 15px;
+        letter-spacing: 0.3px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.25s ease;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+    .btn-subscribe.primary {
+        background: linear-gradient(135deg, #22a855, #16a34a);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(34,168,85,0.35);
+    }
+    .btn-subscribe.primary:hover:not(:disabled) {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        box-shadow: 0 8px 25px rgba(34,168,85,0.45);
+        transform: translateY(-1px);
+    }
+    .btn-subscribe.renew {
+        background: transparent;
+        color: #16a34a;
+        border: 2px solid #22a855;
+    }
+    .btn-subscribe.renew:hover:not(:disabled) {
+        background: #f0fdf4;
+        transform: translateY(-1px);
+    }
+    .btn-subscribe.login-cta {
+        background: linear-gradient(135deg, #1e40af, #1d4ed8);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(30,64,175,0.3);
+        text-decoration: none;
+    }
+    .btn-subscribe.login-cta:hover {
+        background: linear-gradient(135deg, #1d4ed8, #1e3a8a);
+        transform: translateY(-1px);
+        color: #fff;
+    }
+    .btn-subscribe:disabled {
+        opacity: 0.7;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    /* ── Toast ────────────────────────────────────────────────────────────── */
+    #sub-toast-container {
+        position: fixed;
+        bottom: 24px; right: 24px;
+        z-index: 99999;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        max-width: 360px;
+    }
+    .sub-toast {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+        padding: 16px 20px;
+        display: flex;
+        align-items: flex-start;
+        gap: 12px;
+        animation: toastIn 0.35s cubic-bezier(.34,1.56,.64,1);
+        border-left: 4px solid #22a855;
+    }
+    .sub-toast.error { border-left-color: #ef4444; }
+    .sub-toast.warning { border-left-color: #f59e0b; }
+    .sub-toast-icon { font-size: 20px; flex-shrink: 0; margin-top: 1px; }
+    .sub-toast.success .sub-toast-icon { color: #22a855; }
+    .sub-toast.error .sub-toast-icon { color: #ef4444; }
+    .sub-toast.warning .sub-toast-icon { color: #f59e0b; }
+    .sub-toast-body { flex: 1; }
+    .sub-toast-title { font-weight: 700; font-size: 14px; color: #111827; margin-bottom: 2px; }
+    .sub-toast-msg { font-size: 13px; color: #6b7280; }
+    .sub-toast-close { background: none; border: none; color: #9ca3af; cursor: pointer; font-size: 16px; padding: 0; line-height: 1; }
+    @@keyframes toastIn {
+        from { opacity: 0; transform: translateX(30px) scale(0.9); }
+        to   { opacity: 1; transform: translateX(0) scale(1); }
+    }
+
+    /* ── Payment Modal ────────────────────────────────────────────────────── */
+    .pay-modal-overlay {
+        position: fixed; inset: 0;
+        background: rgba(0,0,0,0.55);
+        backdrop-filter: blur(4px);
+        z-index: 9998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.25s ease;
+    }
+    .pay-modal-overlay.active { opacity: 1; pointer-events: all; }
+    .pay-modal {
+        background: #fff;
+        border-radius: 24px;
+        padding: 40px;
+        max-width: 420px;
+        width: 90%;
+        text-align: center;
+        box-shadow: 0 25px 60px rgba(0,0,0,0.2);
+        transform: scale(0.9);
+        transition: transform 0.3s cubic-bezier(.34,1.56,.64,1);
+    }
+    .pay-modal-overlay.active .pay-modal { transform: scale(1); }
+    .pay-modal-icon {
+        width: 72px; height: 72px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 32px;
+        color: #16a34a;
+        margin-bottom: 20px;
+    }
+    .pay-modal h4 { font-weight: 800; color: #111827; margin-bottom: 8px; }
+    .pay-modal p { color: #6b7280; font-size: 14px; margin-bottom: 24px; }
+    .pay-modal .plan-summary {
+        background: #f8faf9;
+        border-radius: 14px;
+        padding: 16px 20px;
+        margin-bottom: 24px;
+        text-align: left;
+    }
+    .pay-modal .plan-summary .row-item {
+        display: flex;
+        justify-content: space-between;
+        font-size: 14px;
+        padding: 5px 0;
+        color: #374151;
+    }
+    .pay-modal .plan-summary .row-item strong { color: #111827; }
+    .pay-modal .plan-summary .total-row {
+        border-top: 1px solid #e5e7eb;
+        margin-top: 8px;
+        padding-top: 10px;
+        font-weight: 700;
+        font-size: 16px;
+        color: #16a34a;
+    }
+    .pay-modal-actions { display: flex; gap: 12px; }
+    .pay-modal-actions button {
+        flex: 1;
+        padding: 13px;
+        border-radius: 12px;
+        font-weight: 700;
+        font-size: 14px;
+        border: none;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-cancel-pay {
+        background: #f3f4f6;
+        color: #374151;
+    }
+    .btn-cancel-pay:hover { background: #e5e7eb; }
+    .btn-confirm-pay {
+        background: linear-gradient(135deg, #22a855, #16a34a);
+        color: #fff;
+        box-shadow: 0 4px 15px rgba(34,168,85,0.35);
+    }
+    .btn-confirm-pay:hover:not(:disabled) {
+        background: linear-gradient(135deg, #16a34a, #15803d);
+        box-shadow: 0 8px 25px rgba(34,168,85,0.45);
+    }
+    .btn-confirm-pay:disabled { opacity: 0.7; cursor: not-allowed; }
+
+    /* ── FAQ / Trust Section ──────────────────────────────────────────────── */
+    .trust-section {
+        background: #fff;
+        padding: 60px 0;
+        border-top: 1px solid #f0f0f0;
+    }
+    .trust-item {
+        text-align: center;
+        padding: 20px;
+    }
+    .trust-icon {
+        width: 60px; height: 60px;
+        border-radius: 18px;
+        background: linear-gradient(135deg, #dcfce7, #bbf7d0);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 26px;
+        color: #16a34a;
+        margin-bottom: 14px;
+    }
+    .trust-item h6 { font-weight: 700; color: #111827; margin-bottom: 6px; }
+    .trust-item p { font-size: 13px; color: #6b7280; margin: 0; }
+</style>
+}
+
+<!-- ── Hero ─────────────────────────────────────────────────────────────────── -->
+<section class="sub-hero">
+    <div class="container position-relative">
+        <div class="badge-pill">
+            <i class="fas fa-crown"></i> AgriRent Premium
+        </div>
+        <h1>Grow Your Farm Business<br><span>Without Limits</span></h1>
+        <p>Unlock equipment listings, product sales, and premium support with a plan built for Indian farmers.</p>
+    </div>
+    <div class="wave-divider">
+        <svg viewBox="0 0 1440 60" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+            <path d="M0,30 C360,60 1080,0 1440,30 L1440,60 L0,60 Z" fill="#f8faf9"/>
+        </svg>
+    </div>
+</section>
+
+<!-- ── Plans ─────────────────────────────────────────────────────────────────── -->
+<section class="plans-section">
+    <div class="container">
+
+        @if (Model.Plans == null || !Model.Plans.Any())
+        {
+            <div class="text-center py-5">
+                <div style="font-size:4rem; margin-bottom:16px;">🌱</div>
+                <h4 class="fw-bold text-muted">No Plans Available</h4>
+                <p class="text-muted">Check back soon — new plans are coming!</p>
+            </div>
+        }
+        else
+        {
+            <div class="row justify-content-center g-4">
+                @{
+                    // Mark the most expensive plan as "popular"
+                    var maxPrice = Model.Plans.Max(p => p.Price);
+                }
+                @foreach (var plan in Model.Plans)
+                {
+                    if (plan == null) continue;
+                    var activeSub = Model.ActiveSubscriptions.FirstOrDefault(s => s.PlanId == plan.PlanId);
+                    var isCurrentPlan = activeSub != null;
+                    var isPopular = plan.Price == maxPrice && !isCurrentPlan;
+                    var expiryDate = isCurrentPlan ? activeSub!.EndDate.ToString("dd MMM yyyy") : "";
+                    var daysLeft = isCurrentPlan ? (int)(activeSub!.EndDate - DateTime.UtcNow).TotalDays : 0;
+
+                    <div class="col-md-6 col-lg-4 d-flex">
+                        <div class="plan-card @(isCurrentPlan ? "is-current" : "") @(isPopular ? "is-popular" : "")">
+
+                            @if (isPopular)
+                            {
+                                <div class="popular-ribbon">Popular</div>
+                            }
+                            @if (isCurrentPlan)
+                            {
+                                <div class="current-badge">
+                                    <i class="fas fa-check-circle me-1"></i> Your Active Plan
+                                </div>
+                            }
+
+                            <!-- Header -->
+                            <div class="plan-header" style="@(isCurrentPlan ? "padding-top:52px;" : "")">
+                                <div class="plan-icon">
+                                    @if (plan.MaxEquipment > 0 && plan.MaxProducts > 0)
+                                    {
+                                        <i class="fas fa-gem"></i>
+                                    }
+                                    else if (plan.MaxEquipment > 0)
+                                    {
+                                        <i class="fas fa-tractor"></i>
+                                    }
+                                    else
+                                    {
+                                        <i class="fas fa-seedling"></i>
+                                    }
+                                </div>
+                                <div class="plan-name">@plan.PlanName</div>
+                                <div class="plan-duration"><i class="fas fa-calendar-alt me-1"></i> @plan.DurationDays-Day Plan</div>
+                            </div>
+
+                            <!-- Price -->
+                            <div class="plan-price-wrap">
+                                <div class="plan-price"><sup>₹</sup>@plan.Price.ToString("0")</div>
+                                <div class="plan-price-sub">one-time payment · @plan.DurationDays days access</div>
+                            </div>
+
+                            <!-- Features -->
+                            <div class="plan-features">
+                                <ul>
+                                    <li>
+                                        <span class="fi"><i class="fas fa-check"></i></span>
+                                        <span>List up to <strong>@plan.MaxEquipment</strong> Equipment</span>
+                                    </li>
+                                    <li>
+                                        <span class="fi"><i class="fas fa-check"></i></span>
+                                        <span>List up to <strong>@plan.MaxProducts</strong> Products</span>
+                                    </li>
+                                    <li>
+                                        <span class="fi"><i class="fas fa-check"></i></span>
+                                        <span>Priority Customer Support</span>
+                                    </li>
+                                    <li>
+                                        <span class="fi"><i class="fas fa-check"></i></span>
+                                        <span>Verified Seller Badge</span>
+                                    </li>
+                                    <li>
+                                        <span class="fi"><i class="fas fa-check"></i></span>
+                                        <span>Instant Role Activation</span>
+                                    </li>
+                                </ul>
+                            </div>
+
+                            <!-- Expiry Info -->
+                            @if (isCurrentPlan)
+                            {
+                                <div class="expiry-alert">
+                                    <i class="fas fa-shield-alt"></i>
+                                    <div>
+                                        <strong>Active</strong> · Expires @expiryDate
+                                        @if (daysLeft <= 7)
+                                        {
+                                            <span class="badge bg-warning text-dark ms-1" style="font-size:10px;">Expiring Soon</span>
+                                        }
+                                    </div>
+                                </div>
+                            }
+
+                            <!-- CTA -->
+                            <div class="plan-cta">
+                                @if (isCurrentPlan)
+                                {
+                                    <button class="btn-subscribe renew"
+                                            onclick="confirmPurchase(@plan.PlanId, '@plan.PlanName', @plan.Price, @plan.DurationDays, true, this)">
+                                        <i class="fas fa-sync-alt"></i> Extend / Renew Plan
+                                    </button>
+                                }
+                                else if (isLoggedIn)
+                                {
+                                    <button class="btn-subscribe primary"
+                                            onclick="confirmPurchase(@plan.PlanId, '@plan.PlanName', @plan.Price, @plan.DurationDays, false, this)">
+                                        <i class="fas fa-bolt"></i> Subscribe Now
+                                    </button>
+                                }
+                                else
+                                {
+                                    <a href="/Account/Login?returnUrl=/Subscription" class="btn-subscribe login-cta">
+                                        <i class="fas fa-sign-in-alt"></i> Login to Subscribe
+                                    </a>
+                                }
+                            </div>
+
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <!-- Trust badges -->
+            <div class="row justify-content-center mt-5 g-0">
+                <div class="col-auto">
+                    <div class="d-flex align-items-center gap-4 flex-wrap justify-content-center" style="font-size:13px; color:#6b7280;">
+                        <span><i class="fas fa-lock text-success me-1"></i> Secure Razorpay Payment</span>
+                        <span><i class="fas fa-undo text-success me-1"></i> Instant Activation</span>
+                        <span><i class="fas fa-headset text-success me-1"></i> 24/7 Support</span>
+                        <span><i class="fas fa-shield-alt text-success me-1"></i> 100% Safe & Verified</span>
+                    </div>
+                </div>
+            </div>
+        }
+
+    </div>
+</section>
+
+<!-- ── Trust Section ──────────────────────────────────────────────────────────── -->
+<section class="trust-section">
+    <div class="container">
+        <div class="text-center mb-5">
+            <h2 class="fw-bold" style="color:#111827;">Why Farmers Choose AgriRent Premium</h2>
+            <p class="text-muted">Everything you need to grow your agricultural business</p>
+        </div>
+        <div class="row g-4">
+            <div class="col-md-3 col-sm-6">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-tractor"></i></div>
+                    <h6>Equipment Listings</h6>
+                    <p>List your tractors, harvesters, and tools for rent to nearby farmers</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-store"></i></div>
+                    <h6>Product Marketplace</h6>
+                    <p>Sell seeds, fertilizers, and farm produce directly to buyers</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-badge-check" style="font-family:sans-serif;">✓</i></div>
+                    <h6>Verified Badge</h6>
+                    <p>Build trust with a verified seller badge on your profile</p>
+                </div>
+            </div>
+            <div class="col-md-3 col-sm-6">
+                <div class="trust-item">
+                    <div class="trust-icon"><i class="fas fa-headset"></i></div>
+                    <h6>Priority Support</h6>
+                    <p>Get faster responses from our dedicated farmer support team</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- ── Confirmation Modal ─────────────────────────────────────────────────────── -->
+<div class="pay-modal-overlay" id="payModalOverlay">
+    <div class="pay-modal">
+        <div class="pay-modal-icon"><i class="fas fa-crown"></i></div>
+        <h4 id="payModalTitle">Confirm Subscription</h4>
+        <p id="payModalDesc">You're about to subscribe to a premium plan.</p>
+
+        <div class="plan-summary">
+            <div class="row-item">
+                <span>Plan</span>
+                <strong id="summaryPlan">—</strong>
+            </div>
+            <div class="row-item">
+                <span>Duration</span>
+                <strong id="summaryDuration">—</strong>
+            </div>
+            <div class="row-item total-row">
+                <span>Total</span>
+                <strong id="summaryPrice">—</strong>
+            </div>
+        </div>
+
+        <div class="pay-modal-actions">
+            <button class="btn-cancel-pay" onclick="closePayModal()">Cancel</button>
+            <button class="btn-confirm-pay" id="btnConfirmPay" onclick="proceedToPayment()">
+                <i class="fas fa-lock me-1"></i> Pay Securely
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- Toast Container -->
+<div id="sub-toast-container"></div>
+
+<!-- Razorpay SDK -->
+<script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+
+@section Scripts {
+<script>
+    // ── State ──────────────────────────────────────────────────────────────────
+    let _activePlanId = null;
+    let _activePlanName = null;
+    let _activePlanPrice = null;
+    let _activeDuration = null;
+    let _isRenewal = false;
+    let _triggerBtn = null;
+
+    // ── Confirm Modal ──────────────────────────────────────────────────────────
+    function confirmPurchase(planId, planName, price, duration, isRenewal, btn) {
+        // Validation: must be logged in (server-side guard, but double-check)
+        if (!planId || planId <= 0) {
+            showToast('error', 'Invalid Plan', 'Please select a valid plan.');
+            return;
+        }
+
+        _activePlanId = planId;
+        _activePlanName = planName;
+        _activePlanPrice = price;
+        _activeDuration = duration;
+        _isRenewal = isRenewal;
+        _triggerBtn = btn;
+
+        document.getElementById('payModalTitle').textContent = isRenewal ? 'Extend Your Plan' : 'Confirm Subscription';
+        document.getElementById('payModalDesc').textContent = isRenewal
+            ? 'Extend your current plan and keep your benefits running.'
+            : 'You\'re about to unlock premium features for your farm.';
+        document.getElementById('summaryPlan').textContent = planName;
+        document.getElementById('summaryDuration').textContent = duration + ' Days';
+        document.getElementById('summaryPrice').textContent = '₹' + parseFloat(price).toFixed(0);
+
+        document.getElementById('payModalOverlay').classList.add('active');
+    }
+
+    function closePayModal() {
+        document.getElementById('payModalOverlay').classList.remove('active');
+    }
+
+    // Close modal on overlay click
+    document.getElementById('payModalOverlay').addEventListener('click', function(e) {
+        if (e.target === this) closePayModal();
+    });
+
+    // ── Payment Flow ───────────────────────────────────────────────────────────
+    async function proceedToPayment() {
+        const confirmBtn = document.getElementById('btnConfirmPay');
+        confirmBtn.disabled = true;
+        confirmBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Creating Order...';
+
+        try {
+            // ── Step 1: Create Razorpay Order ──────────────────────────────────
+            const orderRes = await fetch('/Subscription/CreateOrder?planId=' + _activePlanId, {
+                method: 'POST'
+            });
+
+            if (!orderRes.ok) {
+                let errMsg = 'Failed to create payment order.';
+                try { const e = await orderRes.json(); errMsg = e.message || errMsg; } catch(_) {}
+                throw new Error(errMsg);
+            }
+
+            const orderData = await orderRes.json();
+
+            // Validate order response
+            if (!orderData.orderId || !orderData.key || !orderData.amount) {
+                throw new Error('Invalid order response from server.');
+            }
+
+            closePayModal();
+
+            // ── Step 2: Open Razorpay ───────────────────────────────────────────
+            const options = {
+                key: orderData.key,
+                amount: Math.round(parseFloat(orderData.amount) * 100), // paise
+                currency: 'INR',
+                name: 'AgriRent',
+                description: (_isRenewal ? 'Renew: ' : 'Subscribe: ') + _activePlanName,
+                order_id: orderData.orderId,
+                handler: async function(rzpResp) {
+                    await verifyAndActivate(rzpResp);
+                },
+                modal: {
+                    ondismiss: function() {
+                        resetBtn();
+                        showToast('warning', 'Payment Cancelled', 'You closed the payment window. No charges were made.');
+                    }
+                },
+                prefill: { name: '', email: '', contact: '' },
+                theme: { color: '#22a855' },
+                notes: { planId: _activePlanId }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function(resp) {
+                resetBtn();
+                showToast('error', 'Payment Failed', resp.error.description || 'Your payment could not be processed.');
+            });
+            rzp.open();
+
+        } catch (err) {
+            console.error('proceedToPayment:', err);
+            showToast('error', 'Error', err.message || 'Something went wrong. Please try again.');
+            resetBtn();
+        } finally {
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-lock me-1"></i> Pay Securely';
+        }
+    }
+
+    // ── Verify Payment ─────────────────────────────────────────────────────────
+    async function verifyAndActivate(rzpResp) {
+        if (_triggerBtn) {
+            _triggerBtn.disabled = true;
+            _triggerBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Verifying Payment...';
+        }
+
+        // Client-side validation of Razorpay response
+        if (!rzpResp.razorpay_payment_id || !rzpResp.razorpay_order_id || !rzpResp.razorpay_signature) {
+            showToast('error', 'Verification Failed', 'Incomplete payment response. Please contact support.');
+            resetBtn();
+            return;
+        }
+
+        try {
+            const verifyRes = await fetch('/Subscription/VerifyPayment', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    PlanId: _activePlanId,
+                    PaymentId: rzpResp.razorpay_payment_id,
+                    OrderId: rzpResp.razorpay_order_id,
+                    Signature: rzpResp.razorpay_signature
+                })
+            });
+
+            if (verifyRes.ok) {
+                // ✅ Success — redirect to success page
+                window.location.href = '/Subscription/Success';
+            } else {
+                let errMsg = 'Payment verification failed.';
+                try {
+                    const errData = await verifyRes.json();
+                    errMsg = errData.message || errMsg;
+                } catch(_) {}
+                showToast('error', 'Verification Failed', errMsg);
+                resetBtn();
+            }
+        } catch (err) {
+            console.error('verifyAndActivate:', err);
+            showToast('error', 'Network Error', 'Could not verify payment. Please contact support with your payment ID: ' + rzpResp.razorpay_payment_id);
+            resetBtn();
+        }
+    }
+
+    function resetBtn() {
+        if (!_triggerBtn) return;
+        _triggerBtn.disabled = false;
+        _triggerBtn.innerHTML = _isRenewal
+            ? '<i class="fas fa-sync-alt"></i> Extend / Renew Plan'
+            : '<i class="fas fa-bolt"></i> Subscribe Now';
+    }
+
+    // ── Toast Notification ─────────────────────────────────────────────────────
+    function showToast(type, title, message) {
+        const container = document.getElementById('sub-toast-container');
+        const icons = { success: 'fa-check-circle', error: 'fa-times-circle', warning: 'fa-exclamation-triangle' };
+
+        const toast = document.createElement('div');
+        toast.className = `sub-toast ${type}`;
+        toast.innerHTML = `
+            <span class="sub-toast-icon"><i class="fas ${icons[type] || icons.success}"></i></span>
+            <div class="sub-toast-body">
+                <div class="sub-toast-title">${title}</div>
+                <div class="sub-toast-msg">${message}</div>
+            </div>
+            <button class="sub-toast-close" onclick="this.closest('.sub-toast').remove()">×</button>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => { toast.style.opacity = '0'; toast.style.transform = 'translateX(30px)'; toast.style.transition = '0.3s'; setTimeout(() => toast.remove(), 300); }, 5000);
+    }
+</script>
+}

@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+
+<html lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>AgriRent Daily Booking</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#1b6a4c",
+                        "background-light": "#f6f8f7",
+                        "background-dark": "#131f1a",
+                    },
+                    fontFamily: {
+                        "display": ["Inter"]
+                    },
+                    borderRadius: {"DEFAULT": "1rem", "lg": "2rem", "xl": "3rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="relative mx-auto flex h-full min-h-screen max-w-[430px] flex-col overflow-x-hidden bg-background-light dark:bg-background-dark shadow-2xl">
+<header class="bg-primary pt-12 pb-6 px-4 rounded-b-lg">
+<div class="flex items-center justify-between">
+<button class="flex size-10 items-center justify-center rounded-full bg-white/20 text-white backdrop-blur-md">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold text-white tracking-tight">Book Equipment</h1>
+<div class="size-10"></div>
+</div>
+</header>
+<main class="flex-1 px-4 -mt-4 pb-32">
+<div class="mb-4 rounded-xl bg-white dark:bg-slate-800 p-4 shadow-sm border border-primary/5">
+<div class="flex items-center gap-4">
+<div class="h-20 w-28 shrink-0 overflow-hidden rounded-lg bg-slate-100">
+<img alt="Green John Deere Combine Harvester in field" class="h-full w-full object-cover" data-alt="Green John Deere Combine Harvester in field" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCYs1dzyUopIK-R0uY1PPauvbxV82MR9IF0WLvHsIaHVVcHxgNkpGm0FX4KgnVSeR6Kk8j9H31PJyOmWG7oqdP6YLl1TvfMnYEL4fm1-And1Mh5ExCPcLcPFBITlTzlicp5XqWkaujyWZeYWJTYyZ-N46yiUz8rgFv42IxDlK-pQkoo5TsFPsYrFCGNumLCwidZeQ7sX2jCeZScLDUmiIQ3LBTLnAp10HSCMTW51nRLtFoRoaSjH_JcoGShTJCGmaJwTfUG0MoUb4gI"/>
+</div>
+<div class="flex flex-col">
+<span class="inline-flex w-fit rounded-full bg-primary/10 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider text-primary">₹5000/day</span>
+<h2 class="mt-1 text-base font-bold text-slate-900 dark:text-white leading-tight">John Deere W70</h2>
+<p class="text-sm font-medium text-slate-500 dark:text-slate-400">Harvester</p>
+</div>
+</div>
+</div>
+<div class="mb-6 flex px-2 py-1 bg-slate-200/50 dark:bg-slate-700/50 rounded-full">
+<button class="flex-1 py-2 text-sm font-semibold rounded-full bg-primary text-white shadow-sm">Daily</button>
+<button class="flex-1 py-2 text-sm font-medium text-slate-600 dark:text-slate-300">Hourly</button>
+</div>
+<div class="mb-4 rounded-xl bg-white dark:bg-slate-800 p-5 shadow-sm border border-primary/5">
+<div class="flex items-center justify-between mb-4">
+<button class="text-slate-400"><span class="material-symbols-outlined">chevron_left</span></button>
+<h3 class="font-bold text-slate-900 dark:text-white">March 2026</h3>
+<button class="text-slate-400"><span class="material-symbols-outlined">chevron_right</span></button>
+</div>
+<div class="grid grid-cols-7 gap-y-2 text-center">
+<div class="text-[11px] font-bold text-slate-400 uppercase">S</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">M</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">T</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">W</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">T</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">F</div>
+<div class="text-[11px] font-bold text-slate-400 uppercase">S</div>
+<div class="col-start-1 h-10 flex items-center justify-center text-sm font-medium text-slate-300">1</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-300">2</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-300">...</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">14</div>
+<div class="h-10 relative flex items-center justify-center z-10">
+<div class="absolute inset-y-1 right-0 left-1/2 bg-primary/20 -z-10"></div>
+<div class="size-8 flex items-center justify-center rounded-full bg-primary text-white text-sm font-bold">15</div>
+</div>
+<div class="h-10 bg-primary/20 flex items-center justify-center text-sm font-bold text-primary">16</div>
+<div class="h-10 relative flex items-center justify-center z-10">
+<div class="absolute inset-y-1 left-0 right-1/2 bg-primary/20 -z-10"></div>
+<div class="size-8 flex items-center justify-center rounded-full bg-primary text-white text-sm font-bold">17</div>
+</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">18</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">19</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">20</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">21</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">22</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">23</div>
+<div class="h-10 flex items-center justify-center text-sm font-medium text-slate-900 dark:text-slate-200">24</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3 mb-6">
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">Start Date</span>
+</div>
+<p class="text-base font-bold text-slate-900 dark:text-white">15 Mar</p>
+</div>
+<div class="flex flex-col gap-1 rounded-xl bg-white dark:bg-slate-800 p-4 border border-slate-200 dark:border-slate-700 shadow-sm">
+<div class="flex items-center gap-2 text-primary">
+<span class="material-symbols-outlined text-sm">schedule</span>
+<span class="text-[10px] font-bold uppercase tracking-wider">End Date</span>
+</div>
+<p class="text-base font-bold text-slate-900 dark:text-white">17 Mar</p>
+</div>
+</div>
+<div class="rounded-xl bg-primary/5 p-4 border border-primary/10">
+<h4 class="text-xs font-bold text-primary uppercase mb-2">Location Details</h4>
+<div class="flex items-center gap-3">
+<div class="size-8 flex items-center justify-center rounded-lg bg-white dark:bg-slate-700 text-primary">
+<span class="material-symbols-outlined text-xl">location_on</span>
+</div>
+<p class="text-sm font-medium text-slate-700 dark:text-slate-300">Punjab Agricultural Farm, Sector 12</p>
+</div>
+</div>
+</main>
+<footer class="fixed bottom-0 left-1/2 w-full max-w-[430px] -translate-x-1/2 bg-white dark:bg-slate-900 p-6 shadow-[0_-8px_30px_rgb(0,0,0,0.06)] border-t border-slate-100 dark:border-slate-800 rounded-t-lg">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400">₹5000/day × 3 days</span>
+<span class="text-2xl font-black text-slate-900 dark:text-white">₹15,000</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-[10px] font-bold text-primary uppercase tracking-widest">Total Pay</span>
+<span class="text-[10px] text-slate-400">Includes taxes</span>
+</div>
+</div>
+<button class="w-full rounded-xl bg-primary py-4 text-center text-base font-bold text-white shadow-lg shadow-primary/20 active:scale-95 transition-transform">
+                Confirm Booking
+            </button>
+</footer>
+</div>
+</body></html>
